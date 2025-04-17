@@ -1,10 +1,5 @@
 import { supabase } from "../lib/supabase";
-import {
-  AuthError,
-  User,
-  Session,
-  AuthChangeEvent,
-} from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 
 interface SignUpOptions {
   data?: {
@@ -39,9 +34,9 @@ export const auth = {
       password,
       options: {
         data: {
-          name: options?.data?.name
-        }
-      }
+          name: options?.data?.name,
+        },
+      },
     });
 
     if (data?.session) {

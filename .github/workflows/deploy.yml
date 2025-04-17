@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.18.2"
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+      - name: Clean npm cache
+        run: npm cache clean --force
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Check environment variables
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_SERVICE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+        run: |
+          echo "Checking environment variables..."
+          if [ -z "$VITE_SUPABASE_URL" ]; then echo "VITE_SUPABASE_URL is empty"; else echo "VITE_SUPABASE_URL is set"; fi
+          if [ -z "$VITE_SUPABASE_ANON_KEY" ]; then echo "VITE_SUPABASE_ANON_KEY is empty"; else echo "VITE_SUPABASE_ANON_KEY is set"; fi
+          if [ -z "$VITE_SUPABASE_SERVICE_KEY" ]; then echo "VITE_SUPABASE_SERVICE_KEY is empty"; else echo "VITE_SUPABASE_SERVICE_KEY is set"; fi
+          if [ -z "$VITE_SUPABASE_PROJECT_ID" ]; then echo "VITE_SUPABASE_PROJECT_ID is empty"; else echo "VITE_SUPABASE_PROJECT_ID is set"; fi
+      - name: Build with Vite
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_SERVICE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_KEY }}
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
