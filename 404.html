@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-        // Get the path from the URL
-        const path = window.location.pathname;
-        // Redirect to index.html with the path
-        window.location.href = '/cake-rate/index.html' + path;
+        // Store the path we want to redirect to
+        sessionStorage.redirect = location.pathname;
+        // Redirect to the index page
+        location.href = '/cake-rate/';
     </script>
 </head>
 
