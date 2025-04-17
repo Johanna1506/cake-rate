@@ -32,6 +32,13 @@ jobs:
         run: npm cache clean --force
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+      - name: Check environment variables
+        run: |
+          echo "Checking environment variables..."
+          echo "VITE_SUPABASE_URL: ${#VITE_SUPABASE_URL}"
+          echo "VITE_SUPABASE_ANON_KEY: ${#VITE_SUPABASE_ANON_KEY}"
+          echo "VITE_SUPABASE_SERVICE_KEY: ${#VITE_SUPABASE_SERVICE_KEY}"
+          echo "VITE_SUPABASE_PROJECT_ID: ${#VITE_SUPABASE_PROJECT_ID}"
       - name: Build with Vite
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
