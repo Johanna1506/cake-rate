@@ -31,7 +31,7 @@ jobs:
       - name: Clean npm cache
         run: npm cache clean --force
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       - name: Build with Vite
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
