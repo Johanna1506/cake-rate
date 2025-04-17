@@ -16,4 +16,5 @@ export default defineConfig({
       '@context': path.resolve(__dirname, './src/context'),
     },
   },
+  base: '/cake-rate/',
 })
