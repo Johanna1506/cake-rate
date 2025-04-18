@@ -31,7 +31,6 @@ import {
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
   Menu as MenuIcon,
-  AccountCircle as AccountCircleIcon,
   Login as LoginIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,

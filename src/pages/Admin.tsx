@@ -9,8 +9,6 @@ import {
   Tab,
   CircularProgress,
   Alert,
-  Paper,
-  useTheme,
   Fade,
   Slide,
 } from "@mui/material";
@@ -25,7 +23,6 @@ interface TabPanelProps {
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
-  const theme = useTheme();
 
   return (
     <div

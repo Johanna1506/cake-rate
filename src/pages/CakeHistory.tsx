@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Chip, Fade } from "@mui/material";
+import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Chip } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
 import { useQuery } from "@tanstack/react-query";
