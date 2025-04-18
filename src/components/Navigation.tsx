@@ -269,20 +269,25 @@ export function Navigation() {
           <>
             <ListItemButton onClick={() => setOpen(!open)}>
               <ListItemIcon>
-                <AccountCircleIcon />
+                   <StyledAvatar
+                    src={userDetails?.avatar_url || undefined}
+                    alt={userDetails?.name || "Avatar"}
+                  >
+                    {userDetails?.name?.[0] || "U"}
+                  </StyledAvatar>
               </ListItemIcon>
               <ListItemText primary={userDetails?.name || "Profil"} />
               {open ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
             <Collapse in={open} timeout="auto" unmountOnExit>
-              <StyledMenuItem onClick={() => navigate("/profile")} sx={{ pl: 4 }}>
+              <StyledMenuItem onClick={() => navigate("/profile")} sx={{ pl: 5 }}>
                 <ListItemIcon>
                   <PersonIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Profil</ListItemText>
               </StyledMenuItem>
               {isAdmin && (
-                <StyledMenuItem onClick={() => navigate("/admin")} sx={{ pl: 4 }}>
+                <StyledMenuItem onClick={() => navigate("/admin")} sx={{ pl: 5 }}>
                   <ListItemIcon>
                     <AdminIcon fontSize="small" />
                   </ListItemIcon>
