@@ -47,10 +47,11 @@ export interface Week {
     start_date: string;
     end_date: string;
     is_active: boolean;
+    show_scores: boolean;
     created_at?: string;
     user?: {
         id: string;
         name: string;
         email: string;
     };
-} 
+}

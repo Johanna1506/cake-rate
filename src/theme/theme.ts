@@ -92,6 +92,10 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 root: {
                     borderRadius: 8,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                        transform: 'translateY(-1px)',
+                    },
                 },
             },
         },
@@ -196,6 +200,10 @@ export const darkTheme = createTheme({
             styleOverrides: {
                 root: {
                     borderRadius: 8,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                        transform: 'translateY(-1px)',
+                    },
                 },
             },
         },
@@ -236,4 +244,4 @@ export const darkTheme = createTheme({
 export const getTheme = (mode: 'light' | 'dark') => {
     const theme = mode === 'dark' ? darkTheme : lightTheme;
     return responsiveFontSizes(theme);
-}; 
+};
