@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { supabase } from "../lib/supabaseClient";
-import { User, UserRole } from "../types";
+import { supabase } from "@lib/supabaseClient";
+import { User, UserRole } from "../../types";
 import {
   Box,
   Paper,

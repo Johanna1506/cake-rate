@@ -5,19 +5,28 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { ThemeProvider } from "./context/ThemeContext";
-import { Login } from "./pages/Login";
-import { SignUp } from "./pages/SignUp";
-import { Home } from "./pages/Home";
-import { Admin } from "./pages/Admin";
-import { Profile } from "./pages/Profile";
-import { RateCake } from "./pages/RateCake";
-import { Navigation } from "./components/Navigation";
-import { CakeHistory } from "./components/CakeHistory";
-import { WeekManager } from "./pages/WeekManager";
+import { lazy, Suspense } from "react";
+import { ThemeProvider } from "@context/ThemeContext";
+import { Navigation } from "@components/Navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useSession, useUserDetails, useHasRole } from "@hooks/useAuthQuery";
-import { UploadCake } from "./pages/UploadCake";
+
+// Lazy load all pages
+const Login = lazy(() => import("@pages/Login").then(module => ({ default: module.Login })));
+const SignUp = lazy(() => import("@pages/SignUp").then(module => ({ default: module.SignUp })));
+const Home = lazy(() => import("@pages/Home").then(module => ({ default: module.Home })));
+const Admin = lazy(() => import("@pages/Admin").then(module => ({ default: module.Admin })));
+const Profile = lazy(() => import("@pages/Profile").then(module => ({ default: module.Profile })));
+const RateCake = lazy(() => import("@pages/RateCake").then(module => ({ default: module.RateCake })));
+const CakeHistory = lazy(() => import("@pages/CakeHistory").then(module => ({ default: module.CakeHistory })));
+const UploadCake = lazy(() => import("@pages/UploadCake").then(module => ({ default: module.UploadCake })));
+
+// Loading component
+const Loading = () => (
+  <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+    <CircularProgress />
+  </Box>
+);
 
 function PrivateRoute({
   children,
@@ -37,11 +46,7 @@ function PrivateRoute({
   const isAuthenticated = !!session?.session?.user;
 
   if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading />;
   }
 
   if (!isAuthenticated) {
@@ -75,90 +80,80 @@ function AppContent() {
   const loading = sessionLoading || userDetailsLoading;
 
   if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading />;
   }
 
   return (
     <>
       <Navigation />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <SignUp />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/cake-upload"
-          element={
-            <PrivateRoute>
-              <UploadCake />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/rate/:cakeId"
-          element={
-            <PrivateRoute>
-              <RateCake />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/cake-history"
-          element={
-            <PrivateRoute>
-              <CakeHistory />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <PrivateRoute requireAdmin={true}>
-              <Admin />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/admin/weeks"
-          element={
-            <PrivateRoute requireAdmin={true}>
-              <WeekManager />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/cake-upload"
+            element={
+              <PrivateRoute>
+                <UploadCake />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/rate/:cakeId"
+            element={
+              <PrivateRoute>
+                <RateCake />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cake-history"
+            element={
+              <PrivateRoute>
+                <CakeHistory />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute requireAdmin={true}>
+                <Admin />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </>
   );
 }

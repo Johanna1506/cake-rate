@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { supabase } from "../lib/supabaseClient";
-import { Week, User } from "../types";
+import { supabase } from "@lib/supabaseClient";
+import { Week, User } from "../../types";
 import {
   Box,
   Container,
@@ -68,6 +68,7 @@ export function WeekManager() {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [isActive, setIsActive] = useState(false);
+  const [showScores, setShowScores] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // État pour la confirmation de suppression
@@ -144,6 +145,7 @@ export function WeekManager() {
       setStartDate(parseISO(week.start_date));
       setEndDate(parseISO(week.end_date));
       setIsActive(week.is_active);
+      setShowScores(week.show_scores);
       setSelectedUserId(week.user_id || null);
     } else {
       // Mode ajout
@@ -154,6 +156,7 @@ export function WeekManager() {
       setStartDate(new Date());
       setEndDate(new Date());
       setIsActive(false);
+      setShowScores(false);
       setSelectedUserId(null);
     }
     setDialogOpen(true);
@@ -203,6 +206,7 @@ export function WeekManager() {
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         is_active: isActive,
+        show_scores: showScores,
         user_id: selectedUserId,
       };
 
@@ -501,6 +505,17 @@ export function WeekManager() {
                 />
               }
               label="Semaine active"
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showScores}
+                  onChange={(e) => setShowScores(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Afficher les scores"
             />
           </Stack>
         </DialogContent>

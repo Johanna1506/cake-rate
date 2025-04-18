@@ -9,9 +9,13 @@ import {
   Tab,
   CircularProgress,
   Alert,
+  Paper,
+  useTheme,
+  Fade,
+  Slide,
 } from "@mui/material";
-import { UserManager } from "./UserManager";
-import { WeekManager } from "./WeekManager";
+import { UserManager } from "@components/admin/UserManager";
+import { WeekManager } from "@components/admin/WeekManager";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -21,6 +25,7 @@ interface TabPanelProps {
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
+  const theme = useTheme();
 
   return (
     <div
@@ -30,7 +35,17 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`admin-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+      <Fade in={value === index} timeout={500}>
+        <Box sx={{ p: 3 }}>
+          <Slide
+            direction={value > index ? "left" : "right"}
+            in={value === index}
+            timeout={500}
+          >
+            <Box>{children}</Box>
+          </Slide>
+        </Box>
+      </Fade>
     </div>
   );
 }
@@ -117,6 +132,24 @@ export function Admin() {
             value={tabValue}
             onChange={handleTabChange}
             aria-label="admin tabs"
+            sx={{
+              '& .MuiTab-root': {
+                color: 'primary.main',
+                fontSize: '1rem',
+                textTransform: 'none',
+                minHeight: 48,
+                px: 3,
+                '&.Mui-selected': {
+                  color: 'text.secondary',
+                  fontWeight: 'bold',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'text.secondary',
+                height: 3,
+                borderRadius: '3px 3px 0 0',
+              },
+            }}
           >
             <Tab label="Gestion des utilisateurs" {...a11yProps(0)} />
             <Tab label="Gestion des semaines" {...a11yProps(1)} />
