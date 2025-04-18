@@ -36,7 +36,6 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
-  StarBorder,
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
@@ -66,7 +65,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   },
 }));
 
-const LogoContainer = styled(Link)(({ theme }) => ({
+const LogoContainer = styled(Link)(() => ({
   display: "flex",
   alignItems: "center",
   textDecoration: "none",
@@ -118,6 +117,7 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
     width: 280,
+    borderRadius: '20px 0 0 20px',
     backgroundColor: theme.palette.mode === 'dark'
       ? alpha(theme.palette.background.paper, 0.95)
       : alpha(theme.palette.background.paper, 0.98),
