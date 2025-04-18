@@ -22,6 +22,8 @@ import {
   ListItemText,
   Divider,
   ListItemButton,
+  Collapse,
+  alpha,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -34,6 +36,9 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
+  StarBorder,
+  ExpandLess,
+  ExpandMore,
 } from "@mui/icons-material";
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
@@ -42,32 +47,102 @@ import logo from "../assets/logo.png";
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor:
     theme.palette.mode === "dark"
-      ? theme.palette.background.paper
-      : theme.palette.primary.main,
+      ? alpha(theme.palette.background.paper, 0.8)
+      : alpha(theme.palette.primary.main, 0.9),
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease-in-out',
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 2px 10px rgba(0, 0, 0, 0.2)'
+    : '0 2px 10px rgba(0, 0, 0, 0.1)',
 }));
 
-const StyledToolbar = styled(Toolbar)(() => ({
+const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+  padding: theme.spacing(0, 2),
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(0, 4),
+  },
 }));
 
-const LogoContainer = styled(Link)(() => ({
+const LogoContainer = styled(Link)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   textDecoration: "none",
   color: "inherit",
+  transition: 'transform 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
 }));
 
 const Logo = styled("img")({
-  height: 40,
-  marginRight: 8,
+  height: 45,
+  marginRight: 12,
+  transition: 'all 0.3s ease-in-out',
 });
 
 const NavLinks = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: theme.spacing(2),
+}));
+
+const NavButton = styled(Button)<{ component?: React.ElementType; to?: string }>(({ theme }) => ({
+  color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.white,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.1),
+    transform: 'translateY(-1px)',
+  },
+  '& .MuiButton-startIcon': {
+    transition: 'transform 0.2s ease-in-out',
+  },
+  '&:hover .MuiButton-startIcon': {
+    transform: 'scale(1.1)',
+  },
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 36,
+  height: 36,
+  border: `2px solid ${alpha(theme.palette.common.white, 0.2)}`,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'scale(1.1)',
+    borderColor: alpha(theme.palette.common.white, 0.4),
+  },
+}));
+
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  '& .MuiDrawer-paper': {
+    width: 280,
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
+    backdropFilter: 'blur(10px)',
+    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  },
+}));
+
+const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.action.hover, 0.08),
+  },
+}));
+
+const StyledTooltip = styled(Tooltip)(({ theme }) => ({
+  '& .MuiTooltip-tooltip': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.grey[800], 0.95)
+      : alpha(theme.palette.grey[700], 0.95),
+    backdropFilter: 'blur(10px)',
+    fontSize: '0.875rem',
+    padding: '4px 8px',
+    borderRadius: '4px',
+  },
 }));
 
 const MobileMenuButton = styled(IconButton)(({ theme }) => ({
@@ -98,6 +173,7 @@ export function Navigation() {
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
     null
   );
+  const [open, setOpen] = useState(false);
 
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
@@ -131,33 +207,43 @@ export function Navigation() {
       open={Boolean(userMenuAnchor)}
       onClose={handleUserMenuClose}
       onClick={handleUserMenuClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: (theme) => theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.95)
+            : alpha(theme.palette.background.paper, 0.98),
+          backdropFilter: 'blur(10px)',
+          mt: 1,
+          border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        },
+      }}
     >
-      <MenuItem onClick={() => navigate("/profile")}>
+      <StyledMenuItem onClick={() => navigate("/profile")}>
         <ListItemIcon>
           <PersonIcon fontSize="small" />
         </ListItemIcon>
         <ListItemText>Profil</ListItemText>
-      </MenuItem>
+      </StyledMenuItem>
       {isAdmin && (
-        <MenuItem onClick={() => navigate("/admin")}>
+        <StyledMenuItem onClick={() => navigate("/admin")}>
           <ListItemIcon>
             <AdminIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Administration</ListItemText>
-        </MenuItem>
+        </StyledMenuItem>
       )}
       <Divider />
-      <MenuItem onClick={handleSignOut}>
+      <StyledMenuItem onClick={handleSignOut}>
         <ListItemIcon>
           <LogoutIcon fontSize="small" />
         </ListItemIcon>
         <ListItemText>Déconnexion</ListItemText>
-      </MenuItem>
+      </StyledMenuItem>
     </Menu>
   );
 
   const renderMobileMenu = () => (
-    <Drawer
+    <StyledDrawer
       anchor="right"
       open={Boolean(mobileMenuAnchor)}
       onClose={handleMobileMenuClose}
@@ -181,30 +267,30 @@ export function Navigation() {
         </ListItemButton>
         {session?.session?.user ? (
           <>
-            <ListItemButton onClick={handleUserMenuOpen}>
+            <ListItemButton onClick={() => setOpen(!open)}>
               <ListItemIcon>
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText primary={userDetails?.name || "Profil"} />
+              {open ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
-            {isAdmin && (
-              <ListItemButton
-                component={Link}
-                to="/admin"
-                onClick={handleMobileMenuClose}
-              >
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <StyledMenuItem onClick={() => navigate("/profile")} sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  <AdminIcon />
+                  <PersonIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Administration" />
-              </ListItemButton>
-            )}
-            <ListItemButton onClick={handleSignOut}>
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Déconnexion" />
-            </ListItemButton>
+                <ListItemText>Profil</ListItemText>
+              </StyledMenuItem>
+              {isAdmin && (
+                <StyledMenuItem onClick={() => navigate("/admin")} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <AdminIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Administration</ListItemText>
+                </StyledMenuItem>
+              )}
+            </Collapse>
+
           </>
         ) : (
           <ListItemButton
@@ -226,8 +312,17 @@ export function Navigation() {
             primary={mode === "dark" ? "Mode clair" : "Mode sombre"}
           />
         </ListItemButton>
+        <Divider />
+        {session?.session?.user && (
+           <ListItemButton onClick={handleSignOut}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Déconnexion" />
+            </ListItemButton>
+        )}
       </List>
-    </Drawer>
+    </StyledDrawer>
   );
 
   return (
@@ -238,55 +333,60 @@ export function Navigation() {
         </LogoContainer>
 
         <DesktopNav>
-          <Button
-            color="inherit"
+          <NavButton
             component={Link}
             to="/"
             startIcon={<HomeIcon />}
           >
             Accueil
-          </Button>
-          <Button
-            color="inherit"
+          </NavButton>
+          <NavButton
             component={Link}
             to="/cake-history"
             startIcon={<HistoryIcon />}
           >
             Historique
-          </Button>
+          </NavButton>
           {session?.session?.user ? (
             <>
-              <Tooltip title="Profil">
+              <StyledTooltip title="Profil">
                 <IconButton
                   onClick={handleUserMenuOpen}
                   color="inherit"
                   size="large"
                 >
-                  <Avatar
+                  <StyledAvatar
                     src={userDetails?.avatar_url || undefined}
                     alt={userDetails?.name || "Avatar"}
-                    sx={{ width: 32, height: 32 }}
                   >
                     {userDetails?.name?.[0] || "U"}
-                  </Avatar>
+                  </StyledAvatar>
                 </IconButton>
-              </Tooltip>
+              </StyledTooltip>
             </>
           ) : (
-            <Button
-              color="inherit"
+            <NavButton
               component={Link}
               to="/login"
               startIcon={<LoginIcon />}
             >
               Connexion
-            </Button>
+            </NavButton>
           )}
-          <Tooltip title={mode === "dark" ? "Mode clair" : "Mode sombre"}>
-            <IconButton color="inherit" onClick={toggleTheme}>
+          <StyledTooltip title={mode === "dark" ? "Mode clair" : "Mode sombre"}>
+            <IconButton
+              color="inherit"
+              onClick={toggleTheme}
+              sx={{
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'rotate(15deg) scale(1.1)',
+                },
+              }}
+            >
               {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
-          </Tooltip>
+          </StyledTooltip>
         </DesktopNav>
 
         <MobileMenuButton
