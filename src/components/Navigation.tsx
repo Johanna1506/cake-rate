@@ -249,24 +249,24 @@ export function Navigation() {
       onClose={handleMobileMenuClose}
     >
       <List>
-        <ListItemButton component={Link} to="/" onClick={handleMobileMenuClose}>
-          <ListItemIcon>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary="Accueil" />
-        </ListItemButton>
-        <ListItemButton
-          component={Link}
-          to="/cake-history"
-          onClick={handleMobileMenuClose}
-        >
-          <ListItemIcon>
-            <HistoryIcon />
-          </ListItemIcon>
-          <ListItemText primary="Historique" />
-        </ListItemButton>
         {session?.session?.user ? (
           <>
+            <ListItemButton component={Link} to="/" onClick={handleMobileMenuClose}>
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText primary="Accueil" />
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/cake-history"
+              onClick={handleMobileMenuClose}
+            >
+              <ListItemIcon>
+                <HistoryIcon />
+              </ListItemIcon>
+              <ListItemText primary="Historique" />
+            </ListItemButton>
             <ListItemButton onClick={() => setOpen(!open)}>
               <ListItemIcon>
                    <StyledAvatar
@@ -295,7 +295,13 @@ export function Navigation() {
                 </StyledMenuItem>
               )}
             </Collapse>
-
+            <Divider />
+            <ListItemButton onClick={handleSignOut}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Déconnexion" />
+            </ListItemButton>
           </>
         ) : (
           <ListItemButton
@@ -317,15 +323,6 @@ export function Navigation() {
             primary={mode === "dark" ? "Mode clair" : "Mode sombre"}
           />
         </ListItemButton>
-        <Divider />
-        {session?.session?.user && (
-           <ListItemButton onClick={handleSignOut}>
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Déconnexion" />
-            </ListItemButton>
-        )}
       </List>
     </StyledDrawer>
   );
@@ -338,22 +335,22 @@ export function Navigation() {
         </LogoContainer>
 
         <DesktopNav>
-          <NavButton
-            component={Link}
-            to="/"
-            startIcon={<HomeIcon />}
-          >
-            Accueil
-          </NavButton>
-          <NavButton
-            component={Link}
-            to="/cake-history"
-            startIcon={<HistoryIcon />}
-          >
-            Historique
-          </NavButton>
           {session?.session?.user ? (
             <>
+              <NavButton
+                component={Link}
+                to="/"
+                startIcon={<HomeIcon />}
+              >
+                Accueil
+              </NavButton>
+              <NavButton
+                component={Link}
+                to="/cake-history"
+                startIcon={<HistoryIcon />}
+              >
+                Historique
+              </NavButton>
               <StyledTooltip title="Profil">
                 <IconButton
                   onClick={handleUserMenuOpen}
