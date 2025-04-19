@@ -7,23 +7,6 @@
   <link rel="icon" type="image/png" href="/cake-rate/favicon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cake Notation</title>
-  <script>
-    // Check if we have a stored redirect path
-    const redirect = sessionStorage.redirect;
-    delete sessionStorage.redirect;
-    if (redirect && redirect != location.pathname) {
-      history.replaceState(null, null, redirect);
-    }
-
-    // Handle direct navigation to routes
-    if (window.location.pathname.startsWith('/cake-rate/') &&
-      !window.location.pathname.endsWith('/') &&
-      !window.location.pathname.includes('.')) {
-      const path = window.location.pathname;
-      sessionStorage.redirect = path;
-      window.location.href = '/cake-rate/';
-    }
-  </script>
 </head>
 
 <body>
