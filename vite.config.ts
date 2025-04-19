@@ -23,7 +23,10 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     rollupOptions: {
-      input: path.resolve(__dirname, './index.html'),
+      input: {
+        main: path.resolve(__dirname, './index.html'),
+        '404': path.resolve(__dirname, './404.html'),
+      },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
