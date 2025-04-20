@@ -158,6 +158,22 @@ const DesktopNav = styled(NavLinks)(({ theme }) => ({
   },
 }));
 
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    minWidth: '200px',
+    borderRadius: '8px',
+    marginTop: '8px',
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
+    backdropFilter: 'blur(10px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+      : '0 4px 20px rgba(0, 0, 0, 0.15)',
+  },
+}));
+
 export function Navigation() {
   const navigate = useNavigate();
   const muiTheme = useMuiTheme() as Theme;
@@ -203,22 +219,37 @@ export function Navigation() {
   };
 
   const renderUserMenu = () => (
-    <Menu
+    <StyledMenu
       anchorEl={userMenuAnchor}
       open={Boolean(userMenuAnchor)}
       onClose={handleUserMenuClose}
       onClick={handleUserMenuClose}
-      disablePortal
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
       PaperProps={{
+        elevation: 0,
         sx: {
-          backgroundColor: mode === 'dark'
-            ? alpha(muiTheme.palette.background.paper, 0.95)
-            : alpha(muiTheme.palette.background.paper, 0.98),
-          backdropFilter: 'blur(10px)',
-          mt: 1,
-          border: `1px solid ${alpha(muiTheme.palette.divider, 0.1)}`,
+          overflow: 'visible',
+          filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+          '&:before': {
+            content: '""',
+            display: 'block',
+            position: 'absolute',
+            top: 0,
+            right: 14,
+            width: 10,
+            height: 10,
+            bgcolor: 'background.paper',
+            transform: 'translateY(-50%) rotate(45deg)',
+            zIndex: 0,
+          },
         },
-        inert: !Boolean(userMenuAnchor),
       }}
     >
       <StyledMenuItem onClick={() => navigate("/profile")}>
@@ -242,7 +273,7 @@ export function Navigation() {
         </ListItemIcon>
         <ListItemText>Déconnexion</ListItemText>
       </StyledMenuItem>
-    </Menu>
+    </StyledMenu>
   );
 
   const renderMobileMenu = () => (
