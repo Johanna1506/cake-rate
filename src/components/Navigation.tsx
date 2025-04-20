@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useTheme as useMuiTheme, Theme } from '@mui/material/styles';
 import { useTheme } from "@context/ThemeContext";
 import {
   useSignOut,
@@ -176,7 +175,6 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
 
 export function Navigation() {
   const navigate = useNavigate();
-  const muiTheme = useMuiTheme() as Theme;
   const { mode, toggleTheme } = useTheme();
   const { data: session } = useSession();
   const { data: userDetails } = useUserDetails(

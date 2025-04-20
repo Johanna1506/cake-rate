@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { supabase, supabaseServer } from "@lib/supabase";
+import { supabaseServer } from "@lib/supabase";
 import { Week, User } from "../../types";
 import {
   Box,
