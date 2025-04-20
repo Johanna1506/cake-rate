@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { supabase } from "@lib/supabaseClient";
+import { supabase, supabaseServer } from "@lib/supabase";
 import { Week, User } from "../../types";
 import {
   Box,
@@ -76,7 +76,7 @@ export function WeekManager() {
 
   const fetchWeeks = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer
         .from("weeks")
         .select(
           `
@@ -97,7 +97,7 @@ export function WeekManager() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer
         .from("users")
         .select("*")
         .order("name");
@@ -211,12 +211,12 @@ export function WeekManager() {
 
       let response;
       if (isEditing && currentWeek) {
-        response = await supabase
+        response = await supabaseServer
           .from("weeks")
           .update(weekData)
           .eq("id", currentWeek.id);
       } else {
-        response = await supabase.from("weeks").insert([weekData]);
+        response = await supabaseServer.from("weeks").insert([weekData]);
       }
 
       if (response.error) throw response.error;
@@ -244,7 +244,7 @@ export function WeekManager() {
       setSuccess(null);
       setLoading(true);
 
-      const { error } = await supabase
+      const { error } = await supabaseServer
         .from("weeks")
         .delete()
         .eq("id", weekToDelete.id);

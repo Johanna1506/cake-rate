@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { supabase } from "@lib/supabase";
+import { supabase, supabaseServer } from "@lib/supabase";
 import { User, UserRole } from "../../types";
 import {
   Box,
@@ -60,7 +60,7 @@ export function UserManager() {
     console.log("fetchUsers: start");
     try {
       console.log("fetchUsers: before supabase call");
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer
         .from("users")
         .select("*")
         .order("created_at", { ascending: false });
@@ -121,7 +121,7 @@ export function UserManager() {
     if (!selectedUser) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await supabaseServer
         .from("users")
         .update({ role: selectedRole })
         .eq("id", selectedUser.id);

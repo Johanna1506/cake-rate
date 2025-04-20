@@ -160,7 +160,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Router basename="/cake-rate">
+    <Router basename="/cake-rate/">
       <ThemeProvider>
         <AppContent />
       </ThemeProvider>
