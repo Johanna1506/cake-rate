@@ -23,7 +23,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: authConfig,
 });
 
-// Client pour les opérations serveur (sans configuration d'authentification)
+// Client pour les opérations serveur (avec la clé de service)
 export const supabaseServer = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
