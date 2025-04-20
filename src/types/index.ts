@@ -55,3 +55,7 @@ export interface Week {
         email: string;
     };
 }
+
+export interface Weeks {
+    data: Week[];
+}

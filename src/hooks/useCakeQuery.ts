@@ -23,15 +23,15 @@ export const useCake = (cakeId?: string) => {
         queryKey: ['cake', cakeId],
         queryFn: async () => {
             if (!cakeId) return null;
-            
+
             const { data, error } = await auth.supabase
                 .from('cakes')
                 .select('*')
                 .eq('id', cakeId)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
-            return data as Cake;
+            return data as Cake | null;
         },
         enabled: !!cakeId,
     });
@@ -42,7 +42,7 @@ export const useCakeRatings = (cakeId?: string) => {
         queryKey: ['ratings', cakeId],
         queryFn: async () => {
             if (!cakeId) return [];
-            
+
             const { data, error } = await auth.supabase
                 .from('ratings')
                 .select('*')
@@ -113,4 +113,4 @@ export const useRateCake = () => {
             queryClient.invalidateQueries({ queryKey: ['cake', data.cake_id] });
         },
     });
-}; 
+};

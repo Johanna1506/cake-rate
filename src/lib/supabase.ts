@@ -20,7 +20,15 @@ const authConfig = {
 
 // Client unique pour l'application
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: authConfig,
+  auth: {
+    ...authConfig,
+    debug: true
+  },
+  global: {
+    headers: {
+      'x-application-name': 'cake-rate'
+    }
+  }
 });
 
 // Client pour les opérations serveur (avec la clé de service)

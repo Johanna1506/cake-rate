@@ -340,6 +340,8 @@ export function Navigation() {
               </StyledMenuItem>
               {isAdmin && (
                 <StyledMenuItem onClick={() => {
+                  handleMobileMenuClose();
+                  navigate("/admin");
                 }} sx={{ pl: 5 }}>
                   <ListItemIcon>
                     <AdminIcon fontSize="small" />

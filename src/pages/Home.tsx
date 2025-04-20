@@ -15,13 +15,16 @@ import {
   CircularProgress,
   Alert,
   Chip,
+  Modal,
 } from "@mui/material";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSession } from "../hooks/useAuthQuery";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function Home() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const {
     data: currentWeek,
     isLoading: weekLoading,
@@ -73,6 +76,13 @@ export function Home() {
   const endDate = format(new Date(currentWeek.end_date), "dd MMMM yyyy", {
     locale: fr,
   });
+
+  const handleCloseUpload = () => {
+    setShowUpload(false);
+    queryClient.invalidateQueries({ queryKey: ['cakes'] });
+    queryClient.invalidateQueries({ queryKey: ['currentWeek'] });
+    queryClient.invalidateQueries({ queryKey: ['weekCake'] });
+  };
 
   return (
     <Container maxWidth="md">
@@ -156,7 +166,34 @@ export function Home() {
         </Card>
       </Box>
 
-      {showUpload && <CakeUpload onClose={() => setShowUpload(false)} />}
+      <Modal
+        open={showUpload}
+        onClose={handleCloseUpload}
+        aria-labelledby="cake-upload-modal"
+        aria-describedby="cake-upload-modal-description"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            width: '90%',
+            maxWidth: 600,
+            bgcolor: 'background.paper',
+            boxShadow: (theme) => theme.shadows[10],
+            p: 4,
+            borderRadius: 2,
+            outline: 'none',
+            maxHeight: '90vh',
+            overflow: 'auto',
+          }}
+        >
+          <CakeUpload onClose={handleCloseUpload} />
+        </Box>
+      </Modal>
     </Container>
   );
 }

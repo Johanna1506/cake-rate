@@ -10,10 +10,10 @@ export const useCurrentWeek = () => {
                 .from('weeks')
                 .select('*')
                 .eq('is_active', true)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
-            return data as Week;
+            return data as Week | null;
         },
     });
 };
@@ -23,16 +23,16 @@ export const useWeekCake = (weekId?: string) => {
         queryKey: ['weekCake', weekId],
         queryFn: async () => {
             if (!weekId) return null;
-            
+
             const { data, error } = await auth.supabase
                 .from('cakes')
                 .select('*')
                 .eq('week_id', weekId)
-                .single();
+                .maybeSingle();
 
             if (error && error.code !== 'PGRST116') throw error;
             return data as Cake | null;
         },
         enabled: !!weekId,
     });
-}; 
+};
