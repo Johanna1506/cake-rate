@@ -62,17 +62,22 @@ export const auth = {
   },
 
   async signOut() {
-    // Effacer le stockage local
-    localStorage.clear();
+    try {
+      // On efface d'abord le stockage local
+      localStorage.clear();
 
-    // Effacer le cache
-    cachedSession = null;
-    cachedUser = null;
+      // On efface le cache
+      cachedSession = null;
+      cachedUser = null;
 
-    // Appeler la déconnexion Supabase
-    const { error } = await supabase.auth.signOut();
+      // On tente la déconnexion
+      const { error } = await supabase.auth.signOut();
 
-    return { error };
+      return { error };
+    } catch (err) {
+      console.error("Exception during sign out:", err);
+      return { error: err };
+    }
   },
 
   async getCurrentUser() {

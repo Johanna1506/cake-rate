@@ -41,6 +41,7 @@ import {
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
 import logo from "../assets/logo.png";
+import React from "react";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor:
@@ -125,6 +126,10 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
   },
 }));
 
+const StyledDrawerWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledDrawer>>((props, ref) => (
+  <StyledDrawer {...props} ref={ref} />
+));
+
 const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
   transition: 'all 0.2s ease-in-out',
   '&:hover': {
@@ -143,6 +148,10 @@ const StyledTooltip = styled(Tooltip)(({ theme }) => ({
     borderRadius: '4px',
   },
 }));
+
+const StyledTooltipWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledTooltip>>((props, ref) => (
+  <StyledTooltip {...props} ref={ref} />
+));
 
 const MobileMenuButton = styled(IconButton)(({ theme }) => ({
   display: "none",
@@ -172,6 +181,10 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
       : '0 4px 20px rgba(0, 0, 0, 0.15)',
   },
 }));
+
+const StyledMenuWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledMenu>>((props, ref) => (
+  <StyledMenu {...props} ref={ref} />
+));
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -210,6 +223,7 @@ export function Navigation() {
     try {
       await signOut.mutateAsync();
       handleUserMenuClose();
+      handleMobileMenuClose();
       navigate("/login");
     } catch (error) {
       console.error("Error signing out:", error);
@@ -217,7 +231,7 @@ export function Navigation() {
   };
 
   const renderUserMenu = () => (
-    <StyledMenu
+    <StyledMenuWithRef
       anchorEl={userMenuAnchor}
       open={Boolean(userMenuAnchor)}
       onClose={handleUserMenuClose}
@@ -271,11 +285,11 @@ export function Navigation() {
         </ListItemIcon>
         <ListItemText>Déconnexion</ListItemText>
       </StyledMenuItem>
-    </StyledMenu>
+    </StyledMenuWithRef>
   );
 
   const renderMobileMenu = () => (
-    <StyledDrawer
+    <StyledDrawerWithRef
       anchor="right"
       open={Boolean(mobileMenuAnchor)}
       onClose={handleMobileMenuClose}
@@ -312,14 +326,21 @@ export function Navigation() {
               {open ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
             <Collapse in={open} timeout="auto" unmountOnExit>
-              <StyledMenuItem onClick={() => navigate("/profile")} sx={{ pl: 5 }}>
+              <StyledMenuItem
+                onClick={() => {
+                  handleMobileMenuClose();
+                  navigate("/profile");
+                }}
+                sx={{ pl: 5 }}
+              >
                 <ListItemIcon>
                   <PersonIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Profil</ListItemText>
               </StyledMenuItem>
               {isAdmin && (
-                <StyledMenuItem onClick={() => navigate("/admin")} sx={{ pl: 5 }}>
+                <StyledMenuItem onClick={() => {
+                }} sx={{ pl: 5 }}>
                   <ListItemIcon>
                     <AdminIcon fontSize="small" />
                   </ListItemIcon>
@@ -356,7 +377,7 @@ export function Navigation() {
           />
         </ListItemButton>
       </List>
-    </StyledDrawer>
+    </StyledDrawerWithRef>
   );
 
   return (
@@ -383,7 +404,7 @@ export function Navigation() {
               >
                 Historique
               </NavButton>
-              <StyledTooltip title="Profil">
+              <StyledTooltipWithRef title="Profil">
                 <IconButton
                   onClick={handleUserMenuOpen}
                   color="inherit"
@@ -396,7 +417,7 @@ export function Navigation() {
                     {userDetails?.name?.[0] || "U"}
                   </StyledAvatar>
                 </IconButton>
-              </StyledTooltip>
+              </StyledTooltipWithRef>
             </>
           ) : (
             <NavButton
@@ -407,7 +428,7 @@ export function Navigation() {
               Connexion
             </NavButton>
           )}
-          <StyledTooltip title={mode === "dark" ? "Mode clair" : "Mode sombre"}>
+          <StyledTooltipWithRef title={mode === "dark" ? "Mode clair" : "Mode sombre"}>
             <IconButton
               color="inherit"
               onClick={toggleTheme}
@@ -420,7 +441,7 @@ export function Navigation() {
             >
               {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
-          </StyledTooltip>
+          </StyledTooltipWithRef>
         </DesktopNav>
 
         <MobileMenuButton
