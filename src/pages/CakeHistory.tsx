@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Chip } from "@mui/material";
+import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Chip, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
 import { useQuery } from "@tanstack/react-query";
@@ -6,6 +6,7 @@ import { auth } from "@services/auth";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: "100%",
@@ -55,6 +56,7 @@ interface CakeWithWeek extends Cake {
 }
 
 const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week }) => {
+  const navigate = useNavigate();
   const { data: ratings, isLoading } = useQuery({
     queryKey: ["ratings", cakeId],
     queryFn: async () => {
@@ -129,6 +131,20 @@ const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week })
           </Typography>
         </RatingBox>
       </Box>
+      <Button
+        variant="text"
+        size="small"
+        onClick={() => navigate(`/cake-history/${cakeId}`)}
+        sx={{
+          mt: 2,
+          color: 'primary.main',
+          '&:hover': {
+            backgroundColor: 'rgba(25, 118, 210, 0.04)'
+          }
+        }}
+      >
+        Voir les détails
+      </Button>
     </Paper>
   );
 };

@@ -20,6 +20,8 @@ const Profile = lazy(() => import("@pages/Profile").then(module => ({ default: m
 const RateCake = lazy(() => import("@pages/RateCake").then(module => ({ default: module.RateCake })));
 const CakeHistory = lazy(() => import("@pages/CakeHistory").then(module => ({ default: module.CakeHistory })));
 const UploadCake = lazy(() => import("@pages/UploadCake").then(module => ({ default: module.UploadCake })));
+const CakeDetails = lazy(() => import("@pages/CakeDetails").then(module => ({ default: module.CakeDetails })));
+
 
 // Loading component
 const Loading = () => (
@@ -137,6 +139,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/cake-history/:id"
+            element={
+              <PrivateRoute>
+                <CakeDetails />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <PrivateRoute>
@@ -152,6 +162,7 @@ function AppContent() {
               </PrivateRoute>
             }
           />
+
         </Routes>
       </Suspense>
     </>
