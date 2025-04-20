@@ -52,7 +52,7 @@ export function SignUp() {
             });
 
             if (error) {
-                setError(error.message);
+                setError(error instanceof Error ? error.message : 'Une erreur est survenue');
             } else {
                 setSuccess(true);
                 setRedirectCountdown(5);
@@ -192,4 +192,4 @@ export function SignUp() {
             </Box>
         </Container>
     );
-} 
+}
