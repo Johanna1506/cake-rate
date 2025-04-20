@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme as useMuiTheme, Theme } from '@mui/material/styles';
 import { useTheme } from "@context/ThemeContext";
 import {
   useSignOut,
@@ -159,7 +160,8 @@ const DesktopNav = styled(NavLinks)(({ theme }) => ({
 
 export function Navigation() {
   const navigate = useNavigate();
-  const { toggleTheme, mode } = useTheme();
+  const muiTheme = useMuiTheme() as Theme;
+  const { mode, toggleTheme } = useTheme();
   const { data: session } = useSession();
   const { data: userDetails } = useUserDetails(
     session?.session?.user?.id || ""
@@ -206,15 +208,17 @@ export function Navigation() {
       open={Boolean(userMenuAnchor)}
       onClose={handleUserMenuClose}
       onClick={handleUserMenuClose}
+      disablePortal
       PaperProps={{
         sx: {
-          backgroundColor: (theme) => theme.palette.mode === 'dark'
-            ? alpha(theme.palette.background.paper, 0.95)
-            : alpha(theme.palette.background.paper, 0.98),
+          backgroundColor: mode === 'dark'
+            ? alpha(muiTheme.palette.background.paper, 0.95)
+            : alpha(muiTheme.palette.background.paper, 0.98),
           backdropFilter: 'blur(10px)',
           mt: 1,
-          border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          border: `1px solid ${alpha(muiTheme.palette.divider, 0.1)}`,
         },
+        inert: !Boolean(userMenuAnchor),
       }}
     >
       <StyledMenuItem onClick={() => navigate("/profile")}>

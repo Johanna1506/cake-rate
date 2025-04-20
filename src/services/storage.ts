@@ -1,10 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-// Créer un client avec le compte de service
-const serviceClient = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_SERVICE_KEY
-);
+import { supabaseServer } from "@lib/supabase";
 
 export const uploadAvatar = async (
   file: File,
@@ -18,7 +12,7 @@ export const uploadAvatar = async (
   console.log("File extension:", fileExt);
 
   // Supprimer l'ancien avatar s'il existe
-  const { error: deleteError } = await serviceClient.storage
+  const { error: deleteError } = await supabaseServer.storage
     .from("avatars")
     .remove([`${userId}/avatar`]);
 
@@ -27,7 +21,7 @@ export const uploadAvatar = async (
   }
 
   // Uploader le nouvel avatar
-  const { error: uploadError } = await serviceClient.storage
+  const { error: uploadError } = await supabaseServer.storage
     .from("avatars")
     .upload(fileName, file, {
       cacheControl: "3600",
@@ -39,7 +33,7 @@ export const uploadAvatar = async (
     throw uploadError;
   }
 
-  const { data } = serviceClient.storage.from("avatars").getPublicUrl(fileName);
+  const { data } = supabaseServer.storage.from("avatars").getPublicUrl(fileName);
 
   return data.publicUrl;
 };

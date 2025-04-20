@@ -18,10 +18,15 @@ const authConfig = {
   storage: window.localStorage,
 };
 
-// Client côté client
+// Client unique pour l'application
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: authConfig,
 });
 
-// Client côté serveur
-export const supabaseServer = createClient(supabaseUrl, supabaseServiceKey);
+// Client pour les opérations serveur (sans configuration d'authentification)
+export const supabaseServer = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});

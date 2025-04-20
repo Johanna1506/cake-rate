@@ -27,9 +27,12 @@ function TabPanel(props: TabPanelProps) {
   return (
     <div
       role="tabpanel"
-      hidden={value !== index}
       id={`admin-tabpanel-${index}`}
       aria-labelledby={`admin-tab-${index}`}
+      style={{
+        display: value === index ? 'block' : 'none',
+        visibility: value === index ? 'visible' : 'hidden',
+      }}
       {...other}
     >
       <Fade in={value === index} timeout={500}>
