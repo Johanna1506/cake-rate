@@ -33,7 +33,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       <Fade in={value === index} timeout={500}>
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ py: 2 }}>
           <Slide
             direction={value > index ? "left" : "right"}
             in={value === index}

@@ -4,7 +4,6 @@ import { supabase } from "@lib/supabaseClient";
 import { Week, User } from "../../types";
 import {
   Box,
-  Container,
   Typography,
   Paper,
   Button,
@@ -276,8 +275,8 @@ export function WeekManager() {
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
+    <>
+      <Box>
         <Box
           sx={{
             display: "flex",
@@ -312,7 +311,7 @@ export function WeekManager() {
 
         <StyledPaper>
           {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <CircularProgress />
             </Box>
           ) : (
@@ -558,6 +557,6 @@ export function WeekManager() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </>
   );
 }
