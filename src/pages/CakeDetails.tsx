@@ -199,12 +199,12 @@ export function CakeDetails() {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                   <Avatar
-                    src={rating.user.avatar_url}
-                    alt={rating.user.name}
+                    src={rating.user?.avatar_url}
+                    alt={rating.user?.name}
                     sx={{ width: 32, height: 32 }}
                   />
                   <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {rating.user.name}
+                    {rating.user?.name}
                   </Typography>
                 </Box>
                 <Typography variant="body2" color="text.secondary">
