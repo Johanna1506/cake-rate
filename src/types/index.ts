@@ -21,6 +21,11 @@ export interface Cake {
         name: string;
         avatar_url: string;
     };
+    ratings?: Array<{
+        appearance: number;
+        taste: number;
+        theme_adherence: number;
+    }>;
 }
 
 export interface CakeRating {
@@ -44,9 +49,17 @@ export interface Rating {
     created_at: string;
 }
 
-export interface Week {
+export interface Season {
     id: string;
     theme: string;
+    participant_count: number;
+    is_active: boolean;
+    created_at?: string;
+}
+
+export interface Week {
+    id: string;
+    season_id: string;
     description: string;
     user_id?: string;
     start_date: string;
@@ -58,7 +71,12 @@ export interface Week {
         id: string;
         name: string;
         email: string;
+        avatar_url: string;
     };
+    season?: Season;
+    participants?: Array<{
+        count: number;
+    }>;
 }
 
 export interface Weeks {

@@ -14,12 +14,14 @@ import {
     IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { supabaseServer } from "@lib/supabase";
 
 interface CakeUploadProps {
     onClose?: () => void;
+    weekId: string;
 }
 
-export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
+export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { data: session } = useSession();
@@ -30,6 +32,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
@@ -49,32 +52,34 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!file || !currentWeek) return;
+        if (!file) return;
 
         setIsSubmitting(true);
         setError(null);
         setSuccess(false);
 
         try {
+            setLoading(true);
+
             const fileExt = file.name.split('.').pop();
             const fileName = `${session?.session?.user?.id}/${Math.random()}.${fileExt}`;
             const filePath = fileName;
 
-            const { error: uploadError } = await auth.supabase.storage
+            const { error: uploadError } = await supabaseServer.storage
                 .from('cakes')
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
-            const { data: { publicUrl } } = auth.supabase.storage
+            const { data: { publicUrl } } = supabaseServer.storage
                 .from('cakes')
                 .getPublicUrl(filePath);
 
-            const { error: insertError } = await auth.supabase
+            const { error: insertError } = await supabaseServer
                 .from('cakes')
                 .insert({
                     user_id: session?.session?.user?.id,
-                    week_id: currentWeek.id,
+                    week_id: weekId,
                     image_url: publicUrl,
                     description,
                 });
@@ -83,7 +88,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
 
             // Rafraîchir les données
             await queryClient.invalidateQueries({ queryKey: ['cakes'] });
-            await queryClient.invalidateQueries({ queryKey: ['currentWeek'] });
+            await queryClient.invalidateQueries({ queryKey: ['weekCake'] });
 
             setSuccess(true);
             setFile(null);
@@ -93,19 +98,14 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
                 setPreviewUrl(null);
             }
 
-            // Attendre un court instant pour s'assurer que les données sont rafraîchies
-            setTimeout(() => {
-                if (onClose) {
-                    onClose();
-                } else {
-                    navigate('/');
-                }
-            }, 500);
-        } catch (error) {
-            console.error('Error submitting cake:', error);
-            setError('Une erreur est survenue lors de l\'enregistrement de votre gâteau');
+            if (onClose) {
+                onClose();
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
@@ -231,16 +231,24 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose }) => {
                     </Alert>
                 )}
 
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    disabled={isSubmitting || !file}
-                    fullWidth
-                    sx={{ mb: 3 }}
-                >
-                    {isSubmitting ? <CircularProgress size={24} /> : 'Ajouter le gâteau'}
-                </Button>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={onClose}
+                        fullWidth
+                        disabled={loading}
+                    >
+                        Annuler
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        disabled={loading || !file}
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Ajouter le gâteau'}
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );

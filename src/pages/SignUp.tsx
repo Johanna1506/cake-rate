@@ -98,9 +98,7 @@ export function SignUp() {
                                 <Typography variant="subtitle1" fontWeight="bold">
                                     Compte créé avec succès !
                                 </Typography>
-                                <Typography variant="body2">
-                                    Un email de confirmation a été envoyé à {email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien de confirmation pour activer votre compte.
-                                </Typography>
+
                                 {redirectCountdown !== null && (
                                     <Typography variant="body2" sx={{ mt: 1 }}>
                                         Redirection vers la page de connexion dans {redirectCountdown} secondes...

@@ -21,6 +21,15 @@ CREATE TABLE public.weeks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create seasons table
+CREATE TABLE public.seasons (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    participant_count INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create cakes table
 CREATE TABLE public.cakes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -48,6 +57,7 @@ CREATE TABLE public.ratings (
 -- Enable RLS
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weeks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.seasons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cakes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ratings ENABLE ROW LEVEL SECURITY;
 
@@ -67,6 +77,17 @@ CREATE POLICY "Users can view all weeks"
 
 CREATE POLICY "Only admins can create/update weeks"
     ON public.weeks FOR ALL
+    USING (auth.uid() IN (
+        SELECT id FROM public.users WHERE role = 'ADMIN'
+    ));
+
+-- Seasons policies
+CREATE POLICY "Users can view all seasons"
+    ON public.seasons FOR SELECT
+    USING (true);
+
+CREATE POLICY "Only admins can create/update seasons"
+    ON public.seasons FOR ALL
     USING (auth.uid() IN (
         SELECT id FROM public.users WHERE role = 'ADMIN'
     ));

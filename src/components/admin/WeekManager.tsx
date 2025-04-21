@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
 import { supabaseServer } from "@lib/supabase";
-import { Week, User } from "../../types";
+import { Week, User, Season } from "../../types";
 import {
   Box,
   Typography,
@@ -38,7 +38,6 @@ import { fr } from "date-fns/locale";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Add as AddIcon,
   Check as CheckIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
@@ -50,7 +49,11 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(3),
 }));
 
-export function WeekManager() {
+interface WeekManagerProps {
+  isTabActive: boolean;
+}
+
+export function WeekManager({ isTabActive }: WeekManagerProps) {
   const isAdmin = useHasRole("ADMIN");
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -58,11 +61,9 @@ export function WeekManager() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // État pour le formulaire d'ajout/édition
+  // État pour le formulaire d'édition
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [currentWeek, setCurrentWeek] = useState<Week | null>(null);
-  const [theme, setTheme] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
@@ -74,6 +75,9 @@ export function WeekManager() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [weekToDelete, setWeekToDelete] = useState<Week | null>(null);
 
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
+
   const fetchWeeks = useCallback(async () => {
     try {
       const { data, error } = await supabaseServer
@@ -81,7 +85,8 @@ export function WeekManager() {
         .select(
           `
                     *,
-                    user:users(id, name, email)
+                    user:users(id, name, email),
+                    season:seasons(id, theme)
                 `
         )
         .order("start_date", { ascending: false });
@@ -110,8 +115,23 @@ export function WeekManager() {
     }
   }, []);
 
+  const fetchSeasons = useCallback(async () => {
+    try {
+      const { data, error } = await supabaseServer
+        .from("seasons")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSeasons(data || []);
+    } catch (err) {
+      console.error("Erreur lors du chargement des saisons:", err);
+      throw err;
+    }
+  }, []);
+
   const loadData = useCallback(async () => {
-    if (!isAdmin) {
+    if (!isAdmin || !isTabActive) {
       setLoading(false);
       return;
     }
@@ -120,44 +140,29 @@ export function WeekManager() {
     setError(null);
 
     try {
-      await Promise.all([fetchWeeks(), fetchUsers()]);
+      await Promise.all([fetchWeeks(), fetchUsers(), fetchSeasons()]);
     } catch (err) {
       console.error("Erreur lors du chargement des données:", err);
       setError("Erreur lors du chargement des données");
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, fetchWeeks, fetchUsers]);
+  }, [isAdmin, fetchWeeks, fetchUsers, fetchSeasons, isTabActive]);
 
   // Charger les données au montage du composant
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const handleOpenDialog = (week?: Week) => {
-    if (week) {
-      // Mode édition
-      setIsEditing(true);
-      setCurrentWeek(week);
-      setTheme(week.theme);
-      setDescription(week.description || "");
-      setStartDate(parseISO(week.start_date));
-      setEndDate(parseISO(week.end_date));
-      setIsActive(week.is_active);
-      setShowScores(week.show_scores);
-      setSelectedUserId(week.user_id || null);
-    } else {
-      // Mode ajout
-      setIsEditing(false);
-      setCurrentWeek(null);
-      setTheme("");
-      setDescription("");
-      setStartDate(new Date());
-      setEndDate(new Date());
-      setIsActive(false);
-      setShowScores(false);
-      setSelectedUserId(null);
-    }
+  const handleOpenDialog = (week: Week) => {
+    setCurrentWeek(week);
+    setDescription(week.description || "");
+    setStartDate(parseISO(week.start_date));
+    setEndDate(parseISO(week.end_date));
+    setIsActive(week.is_active);
+    setShowScores(week.show_scores);
+    setSelectedUserId(week.user_id || null);
+    setSelectedSeasonId(week.season_id);
     setDialogOpen(true);
   };
 
@@ -176,10 +181,6 @@ export function WeekManager() {
   };
 
   const validateForm = () => {
-    if (!theme.trim()) {
-      setError("Le thème est obligatoire");
-      return false;
-    }
     if (!startDate || !endDate) {
       setError("Les dates de début et de fin sont obligatoires");
       return false;
@@ -200,34 +201,33 @@ export function WeekManager() {
       setLoading(true);
 
       const weekData = {
-        theme,
         description,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         is_active: isActive,
         show_scores: showScores,
         user_id: selectedUserId,
+        season_id: selectedSeasonId,
       };
 
-      let response;
-      if (isEditing && currentWeek) {
-        response = await supabaseServer
+      if (currentWeek) {
+        const { error } = await supabaseServer
           .from("weeks")
           .update(weekData)
           .eq("id", currentWeek.id);
+
+        if (error) throw error;
       } else {
-        response = await supabaseServer.from("weeks").insert([weekData]);
+        const { error } = await supabaseServer
+          .from("weeks")
+          .insert(weekData);
+
+        if (error) throw error;
       }
 
-      if (response.error) throw response.error;
-
-      setSuccess(
-        isEditing
-          ? "Semaine mise à jour avec succès"
-          : "Semaine ajoutée avec succès"
-      );
+      setSuccess("Semaine mise à jour avec succès");
       handleCloseDialog();
-      fetchWeeks();
+      await fetchWeeks();
     } catch (err: any) {
       console.error("Erreur lors de l'enregistrement de la semaine:", err);
       setError(err.message || "Erreur lors de l'enregistrement de la semaine");
@@ -288,13 +288,6 @@ export function WeekManager() {
           <Typography variant="h4" component="h1">
             Gestion des semaines
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-          >
-            Ajouter une semaine
-          </Button>
         </Box>
 
         {error && (
@@ -319,7 +312,7 @@ export function WeekManager() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Thème</TableCell>
+                    <TableCell>Saison</TableCell>
                     <TableCell>Dates</TableCell>
                     <TableCell>Description</TableCell>
                     <TableCell>Participant</TableCell>
@@ -330,15 +323,27 @@ export function WeekManager() {
                 <TableBody>
                   {weeks.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        Aucune semaine n'a été créée. Cliquez sur "Ajouter une
-                        semaine" pour commencer.
+                      <TableCell colSpan={7} align="center">
+                        Aucune semaine n'a été créée.
                       </TableCell>
                     </TableRow>
                   ) : (
                     weeks.map((week) => (
                       <TableRow key={week.id}>
-                        <TableCell>{week.theme}</TableCell>
+                        <TableCell>
+                          {week.season ? (
+                            week.season.theme
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              fontStyle="italic"
+                            >
+                              Pas de saison
+                            </Typography>
+                          )}
+                        </TableCell>
+
                         <TableCell>
                           {format(parseISO(week.start_date), "dd/MM/yyyy", {
                             locale: fr,
@@ -413,25 +418,39 @@ export function WeekManager() {
         </StyledPaper>
       </Box>
 
-      {/* Dialogue d'ajout/édition */}
+      {/* Dialogue d'édition */}
       <Dialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>
-          {isEditing ? "Modifier la semaine" : "Ajouter une semaine"}
-        </DialogTitle>
+        <DialogTitle>Modifier la semaine</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel id="season-select-label">Saison</InputLabel>
+              <Select
+                labelId="season-select-label"
+                value={selectedSeasonId || ""}
+                onChange={(e) => setSelectedSeasonId(e.target.value || null)}
+                label="Saison"
+                required
+                disabled
+              >
+                {selectedSeasonId && (
+                  <MenuItem value={selectedSeasonId}>
+                    {seasons.find(s => s.id === selectedSeasonId)?.theme}
+                  </MenuItem>
+                )}
+              </Select>
+            </FormControl>
+
             <TextField
               label="Thème"
               fullWidth
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              helperText="Thème de la semaine de pâtisserie"
-              required
+              value={seasons.find(s => s.id === selectedSeasonId)?.theme || ""}
+              disabled
             />
 
             <TextField
@@ -441,7 +460,7 @@ export function WeekManager() {
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              helperText="Description détaillée du thème et des contraintes"
+              helperText="Description détaillée de la semaine"
             />
 
             <LocalizationProvider
@@ -535,22 +554,26 @@ export function WeekManager() {
       </Dialog>
 
       {/* Dialogue de confirmation de suppression */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+      >
         <DialogTitle>Confirmer la suppression</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Êtes-vous sûr de vouloir supprimer la semaine "{weekToDelete?.theme}
-            " ? Cette action est irréversible.
+            Êtes-vous sûr de vouloir supprimer cette semaine ? Cette action est
+            irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
+          <Button onClick={handleCloseDeleteDialog} startIcon={<CloseIcon />}>
             Annuler
           </Button>
           <Button
             onClick={handleDeleteWeek}
-            color="error"
             variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
             disabled={loading}
           >
             {loading ? "Suppression..." : "Supprimer"}

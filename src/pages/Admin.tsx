@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { UserManager } from "@components/admin/UserManager";
 import { WeekManager } from "@components/admin/WeekManager";
+import { SeasonManager } from "@components/admin/SeasonManager";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,21 +77,7 @@ export function Admin() {
       setLoading(false);
       return;
     }
-
-    const fetchAdminData = async () => {
-      try {
-        // Fetch admin data here
-        setLoading(false);
-      } catch (err: any) {
-        setError(
-          err.message ||
-            "Une erreur est survenue lors du chargement des données"
-        );
-        setLoading(false);
-      }
-    };
-
-    fetchAdminData();
+    setLoading(false);
   }, [isAdmin]);
 
   if (loading) {
@@ -152,15 +139,19 @@ export function Admin() {
             }}
           >
             <Tab label="Gestion des utilisateurs" {...a11yProps(0)} />
-            <Tab label="Gestion des semaines" {...a11yProps(1)} />
+            <Tab label="Gestion des saisons" {...a11yProps(1)} />
+            <Tab label="Gestion des semaines" {...a11yProps(2)} />
           </Tabs>
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          <UserManager />
+          <UserManager isTabActive={tabValue === 0} />
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          <WeekManager />
+          <SeasonManager isTabActive={tabValue === 1} />
+        </TabPanel>
+        <TabPanel value={tabValue} index={2}>
+          <WeekManager isTabActive={tabValue === 2} />
         </TabPanel>
       </Box>
     </Container>

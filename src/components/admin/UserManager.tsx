@@ -44,7 +44,11 @@ const RoleChip = styled(Chip)(() => ({
   fontWeight: "bold",
 }));
 
-export function UserManager() {
+interface UserManagerProps {
+  isTabActive: boolean;
+}
+
+export function UserManager({ isTabActive }: UserManagerProps) {
   const isAdmin = useHasRole("ADMIN");
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +94,8 @@ export function UserManager() {
     }
 
     const loadData = async () => {
+      if (!isTabActive) return;
+
       setLoading(true);
       setError(null);
 
@@ -104,7 +110,7 @@ export function UserManager() {
     };
 
     loadData();
-  }, [isAdmin, fetchUsers]);
+  }, [isAdmin, fetchUsers, isTabActive]);
 
   const handleOpenDialog = (user: User) => {
     setSelectedUser(user);
