@@ -126,7 +126,7 @@ export function CakeRatingForm({ cakeId }: CakeRatingFormProps) {
             {cake.description}
           </Typography>
           <Chip
-            label={cake.week?.theme}
+            label={cake.week?.season?.theme}
             color="primary"
             sx={{
               mt: 1,

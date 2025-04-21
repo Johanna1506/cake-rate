@@ -129,7 +129,7 @@ export function CakeDetails() {
           </Typography>
           <Box sx={{ mb: 2 }}>
           <Chip
-                label={cake.week.theme}
+                label={cake.week.season?.theme}
                 color="primary"
                 sx={{
                   fontWeight: "bold",

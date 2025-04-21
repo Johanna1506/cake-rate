@@ -41,7 +41,10 @@ export function RateCake() {
         .select(
           `
                     *,
-                    week:weeks(*)
+                    week:weeks(
+                      *,
+                      season:seasons(*)
+                    )
                 `
         )
         .order("created_at", { ascending: false });
@@ -114,7 +117,7 @@ export function RateCake() {
                 />
                 <CardContent>
                   <Typography variant="h6" component="h2">
-                    {cake.week.theme}
+                    {cake.week.season?.theme}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {cake.description}
