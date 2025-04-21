@@ -26,7 +26,11 @@ export const useCake = (cakeId?: string) => {
 
             const { data, error } = await auth.supabase
                 .from('cakes')
-                .select('*')
+                .select(`
+                    *,
+                    week:weeks(*),
+                    user:users(name, avatar_url)
+                `)
                 .eq('id', cakeId)
                 .maybeSingle();
 

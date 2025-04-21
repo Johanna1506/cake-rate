@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@hooks/useAuthQuery";
-import { useRateCake, useCakeRatings } from "@hooks/useCakeQuery";
+import { useRateCake, useCakeRatings, useCake } from "@hooks/useCakeQuery";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -14,7 +14,12 @@ import {
   CardContent,
   Stack,
   Snackbar,
+  CardMedia,
+  Chip,
+  Avatar,
 } from "@mui/material";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface CakeRatingFormProps {
   cakeId: string;
@@ -24,6 +29,7 @@ export function CakeRatingForm({ cakeId }: CakeRatingFormProps) {
   const { data: session } = useSession();
   const rateCake = useRateCake();
   const { data: ratings } = useCakeRatings(cakeId);
+  const { data: cake } = useCake(cakeId);
   const navigate = useNavigate();
   const [appearance, setAppearance] = useState<number | null>(null);
   const [taste, setTaste] = useState<number | null>(null);
@@ -78,8 +84,16 @@ export function CakeRatingForm({ cakeId }: CakeRatingFormProps) {
     }
   };
 
+  if (!cake) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Card sx={{ maxWidth: 600, mx: "auto", p: 3 }}>
+    <Card sx={{ maxWidth: 600, mx: "auto", p: 2 }}>
       <CardContent>
         <Typography variant="h5" gutterBottom align="center">
           {ratings?.some((r) => r.user_id === session?.session?.user?.id)
@@ -87,8 +101,58 @@ export function CakeRatingForm({ cakeId }: CakeRatingFormProps) {
             : "Noter le gâteau"}
         </Typography>
 
+        <Box sx={{ mb: 4 }}>
+          <CardMedia
+            component="img"
+            height="300"
+            image={cake.image_url}
+            alt={cake.description}
+            sx={{ objectFit: "cover", borderRadius: 1, mb: 2 }}
+          />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Avatar
+              src={cake.user?.avatar_url}
+              alt={cake.user?.name}
+              sx={{ width: 40, height: 40 }}
+            />
+            <Typography variant="h6">
+              Gâteau réalisé par {cake.user?.name}
+            </Typography>
+          </Box>
+          <Typography variant="h6" gutterBottom>
+            {cake.name}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" gutterBottom>
+            {cake.description}
+          </Typography>
+          <Chip
+            label={cake.week?.theme}
+            color="primary"
+            sx={{
+              mt: 1,
+              fontWeight: "bold",
+              backgroundColor: "primary.main",
+              color: "white",
+              "& .MuiChip-label": {
+                px: 2,
+              },
+            }}
+          />
+          {cake.week && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
+                locale: fr,
+              })}
+              {" - "}
+              {format(new Date(cake.week.end_date), "dd MMMM yyyy", {
+                locale: fr,
+              })}
+            </Typography>
+          )}
+        </Box>
+
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Box>
               <Typography component="legend" gutterBottom>
                 Apparence

@@ -16,6 +16,11 @@ export interface Cake {
     image_url: string;
     created_at: string;
     user_id: string;
+    week?: Week;
+    user?: {
+        name: string;
+        avatar_url: string;
+    };
 }
 
 export interface CakeRating {
