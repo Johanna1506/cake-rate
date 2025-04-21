@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@hooks/useAuthQuery';
 import { useCurrentWeek } from '@hooks/useWeekQuery';
 import { useQueryClient } from '@tanstack/react-query';
-import { auth } from '@services/auth';
 import {
     Box,
     Button,
@@ -31,7 +30,6 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     const [description, setDescription] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +52,6 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
         event.preventDefault();
         if (!file) return;
 
-        setIsSubmitting(true);
         setError(null);
         setSuccess(false);
 
@@ -104,7 +101,6 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
-            setIsSubmitting(false);
             setLoading(false);
         }
     };

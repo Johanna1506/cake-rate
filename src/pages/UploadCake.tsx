@@ -1,5 +1,5 @@
 import { Container, Typography, Box } from '@mui/material';
-import { CakeUpload } from '../components/CakeUpload';
+import { CakeUpload } from '@components/CakeUpload';
 import { useCurrentWeek } from '@hooks/useWeekQuery';
 import { useSession } from '@hooks/useAuthQuery';
 import { useNavigate } from 'react-router-dom';
@@ -40,11 +40,11 @@ export function UploadCake() {
                     Ajouter votre gâteau
                 </Typography>
                 <Typography variant="h5" color="primary" gutterBottom>
-                    Thème de la semaine : {currentWeek.theme}
+                    Thème de la semaine : {currentWeek.season?.theme}
                 </Typography>
             </Box>
 
-            <CakeUpload />
+            <CakeUpload weekId={currentWeek.id} />
         </Container>
     );
-} 
+}

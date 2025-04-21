@@ -52,6 +52,7 @@ interface CakeWithWeek extends Cake {
   week: Week;
   user: {
     name: string;
+    avatar_url: string;
   };
 }
 
@@ -159,7 +160,7 @@ export function CakeHistory() {
           `
           *,
           week:weeks(*),
-          user:users(name)
+          user:users(name, avatar_url)
         `
         )
         .order("created_at", { ascending: false });
@@ -226,7 +227,7 @@ export function CakeHistory() {
                       {cake.user.name}
                     </Typography>
                     <StyledChip
-                      label={cake.week.theme}
+                      label={cake.week.season?.theme}
                       color="primary"
                       size="small"
                     />
