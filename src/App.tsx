@@ -21,7 +21,7 @@ const RateCake = lazy(() => import("@pages/RateCake").then(module => ({ default:
 const CakeHistory = lazy(() => import("@pages/CakeHistory").then(module => ({ default: module.CakeHistory })));
 const UploadCake = lazy(() => import("@pages/UploadCake").then(module => ({ default: module.UploadCake })));
 const CakeDetails = lazy(() => import("@pages/CakeDetails").then(module => ({ default: module.CakeDetails })));
-
+const NotFound = lazy(() => import("@pages/NotFound").then(module => ({ default: module.NotFound })));
 
 // Loading component
 const Loading = () => (
@@ -162,7 +162,7 @@ function AppContent() {
               </PrivateRoute>
             }
           />
-
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </>
