@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { auth } from '@services/auth';
-import { Cake, CakeRating } from '../types';
+import { Cake, Rating } from '../types';
 import { useSession } from '@hooks/useAuthQuery';
 
 export const useCakes = () => {
@@ -28,7 +28,7 @@ export const useCake = (cakeId?: string) => {
                 .from('cakes')
                 .select(`
                     *,
-                    week:weeks(*),
+                    week:weeks(*, season:seasons(*)),
                     user:users(name, avatar_url)
                 `)
                 .eq('id', cakeId)
@@ -49,12 +49,15 @@ export const useCakeRatings = (cakeId?: string) => {
 
             const { data, error } = await auth.supabase
                 .from('ratings')
-                .select('*')
+                .select(`
+                    *,
+                    user:users(name, avatar_url)
+                `)
                 .eq('cake_id', cakeId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data as CakeRating[];
+            return data as (Rating & { user: { name: string; avatar_url: string } })[];
         },
         enabled: !!cakeId,
     });
@@ -89,7 +92,7 @@ export const useRateCake = () => {
     const { data: session } = useSession();
 
     return useMutation({
-        mutationFn: async ({ cakeId, rating }: { cakeId: string; rating: Omit<CakeRating, 'id' | 'created_at' | 'user_id'> }) => {
+        mutationFn: async ({ cakeId, rating }: { cakeId: string; rating: Omit<Rating, 'id' | 'created_at' | 'user_id'> }) => {
             if (!session?.session?.user?.id) {
                 throw new Error('Vous devez être connecté pour noter un gâteau');
             }
@@ -110,7 +113,7 @@ export const useRateCake = () => {
                 .single();
 
             if (error) throw error;
-            return data as CakeRating;
+            return data as Rating;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['ratings', data.cake_id] });

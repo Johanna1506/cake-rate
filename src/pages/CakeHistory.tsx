@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Chip, Button } from "@mui/material";
+import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Button, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+  cursor: "pointer",
   "&:hover": {
     transform: "translateY(-8px)",
     boxShadow: theme.shadows[8],
@@ -29,10 +30,6 @@ const RatingBox = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const StyledChip = styled(Chip)(({ theme }) => ({
-  marginRight: theme.spacing(1),
-  marginBottom: theme.spacing(1),
-}));
 
 const LoadingCard = () => (
   <StyledCard>
@@ -151,6 +148,7 @@ const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week })
 };
 
 export function CakeHistory() {
+  const navigate = useNavigate();
   const { data: cakes, isLoading } = useQuery<CakeWithWeek[]>({
     queryKey: ["cakes"],
     queryFn: async () => {
@@ -159,7 +157,10 @@ export function CakeHistory() {
         .select(
           `
           *,
-          week:weeks(*),
+          week:weeks(
+            *,
+            season:seasons(*)
+          ),
           user:users(name, avatar_url)
         `
         )
@@ -200,57 +201,79 @@ export function CakeHistory() {
     );
   }
 
+  // Grouper les gâteaux par saison
+  const cakesBySeason = cakes.reduce((acc, cake) => {
+    const seasonName = cake.week.season?.theme || 'Sans saison';
+    if (!acc[seasonName]) {
+      acc[seasonName] = [];
+    }
+    acc[seasonName].push(cake);
+    return acc;
+  }, {} as Record<string, CakeWithWeek[]>);
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" gutterBottom sx={{ mt: 4 }}>
         Historique des gâteaux
       </Typography>
-      <GridContainer container spacing={3}>
-        {cakes.map((cake: CakeWithWeek, index) => (
-          <Grid item xs={12} sm={6} md={4} key={cake.id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <StyledCard>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={cake.image_url}
-                  alt={cake.description}
-                  sx={{ objectFit: "cover" }}
-                />
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <Typography variant="h6" noWrap>
-                      {cake.user.name}
-                    </Typography>
-                    <StyledChip
-                      label={cake.week.season?.theme}
-                      color="primary"
-                      size="small"
+      {Object.entries(cakesBySeason).map(([seasonName, seasonCakes]) => (
+        <Box key={seasonName} sx={{ mb: 6 }}>
+          <Typography variant="h5" sx={{ mt: 4, mb: 3, color: 'primary.main' }}>
+            {seasonName}
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          <GridContainer container spacing={3}>
+            {seasonCakes.map((cake: CakeWithWeek, index) => (
+              <Grid item xs={12} sm={6} md={4} key={cake.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <StyledCard onClick={() => navigate(`/cake-history/${cake.id}`)}>
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={cake.image_url}
+                      alt={cake.description}
+                      sx={{ objectFit: "cover" }}
                     />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
-                      locale: fr,
-                    })}
-                    {" - "}
-                    {format(new Date(cake.week.end_date), "dd MMMM yyyy", {
-                      locale: fr,
-                    })}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {cake.description}
-                  </Typography>
-                  <CakeRatings cakeId={cake.id} week={cake.week} />
-                </CardContent>
-              </StyledCard>
-            </motion.div>
-          </Grid>
-        ))}
-      </GridContainer>
+                    <CardContent>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                        <Box
+                          component="img"
+                          src={cake.user.avatar_url}
+                          alt={cake.user.name}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="h6" noWrap>
+                            {cake.user.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
+                              locale: fr,
+                            })}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {cake.description}
+                      </Typography>
+                      <CakeRatings cakeId={cake.id} week={cake.week} />
+                    </CardContent>
+                  </StyledCard>
+                </motion.div>
+              </Grid>
+            ))}
+          </GridContainer>
+        </Box>
+      ))}
     </Container>
   );
 }

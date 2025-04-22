@@ -1,51 +1,17 @@
 import { Container, Typography, Box, Card, CardMedia, Paper, Rating, Button, Avatar, Chip, Skeleton } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { auth } from "@services/auth";
+import { useCake, useCakeRatings } from "@hooks/useCakeQuery";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Cake, Week } from "../types";
+import { Rating as RatingType } from "../types";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export function CakeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: cake, isLoading } = useQuery({
-    queryKey: ["cake", id],
-    queryFn: async () => {
-      const { data, error } = await auth.supabase
-        .from("cakes")
-        .select(
-          `
-          *,
-          week:weeks(*),
-          user:users(name)
-        `
-        )
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      return data as Cake & { week: Week; user: { name: string } };
-    },
-  });
-
-  const { data: ratings } = useQuery({
-    queryKey: ["ratings", id],
-    queryFn: async () => {
-      const { data, error } = await auth.supabase
-        .from("ratings")
-        .select(`
-          *,
-          user:users(name, avatar_url)
-        `)
-        .eq("cake_id", id);
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: cake, isLoading } = useCake(id);
+  const { data: ratings } = useCakeRatings(id);
 
   if (isLoading) {
     return (
@@ -100,9 +66,15 @@ export function CakeDetails() {
     );
   }
 
-  const averageAppearance = ratings?.reduce((acc, rating) => acc + rating.appearance, 0) / (ratings?.length || 1);
-  const averageTaste = ratings?.reduce((acc, rating) => acc + rating.taste, 0) / (ratings?.length || 1);
-  const averageTheme = ratings?.reduce((acc, rating) => acc + rating.theme_adherence, 0) / (ratings?.length || 1);
+  const calculateAverage = (ratings: any[] | undefined, field: keyof RatingType) => {
+    if (!ratings || ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, rating) => acc + (rating[field] || 0), 0);
+    return sum / ratings.length;
+  };
+
+  const averageAppearance = calculateAverage(ratings, 'appearance');
+  const averageTaste = calculateAverage(ratings, 'taste');
+  const averageTheme = calculateAverage(ratings, 'theme_adherence');
 
   return (
     <Container maxWidth="lg">
@@ -125,28 +97,28 @@ export function CakeDetails() {
         />
         <Box sx={{ p: 3 }}>
           <Typography variant="h4" gutterBottom>
-            {cake.user.name}
+            {cake.user?.name}
           </Typography>
           <Box sx={{ mb: 2 }}>
-          <Chip
-                label={cake.week.season?.theme}
-                color="primary"
-                sx={{
-                  fontWeight: "bold",
-                  backgroundColor: "primary.main",
-                  color: "white",
-                  "& .MuiChip-label": {
-                    px: 2,
-                  },
-                }}
-              />
+            <Chip
+              label={cake.week?.season?.theme}
+              color="primary"
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: "primary.main",
+                color: "white",
+                "& .MuiChip-label": {
+                  px: 2,
+                },
+              }}
+            />
           </Box>
           <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
+            {cake.week?.start_date && format(new Date(cake.week.start_date), "dd MMMM yyyy", {
               locale: fr,
             })}
             {" - "}
-            {format(new Date(cake.week.end_date), "dd MMMM yyyy", {
+            {cake.week?.end_date && format(new Date(cake.week.end_date), "dd MMMM yyyy", {
               locale: fr,
             })}
           </Typography>
@@ -183,36 +155,42 @@ export function CakeDetails() {
             </Box>
           </Box>
 
-          <Typography variant="h6" gutterBottom>
-            Commentaires
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {ratings?.map((rating, index) => (
-              <Paper
-                key={index}
-                sx={{
-                  p: 2,
-                  borderLeft: "4px solid",
-                  borderColor: "primary.main",
-                  backgroundColor: "rgba(25, 118, 210, 0.04)",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                  <Avatar
-                    src={rating.user?.avatar_url}
-                    alt={rating.user?.name}
-                    sx={{ width: 32, height: 32 }}
-                  />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {rating.user?.name}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {rating.comment || "Aucun commentaire"}
-                </Typography>
-              </Paper>
-            ))}
-          </Box>
+          {ratings && ratings.some(rating => rating.comment) && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Commentaires
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {ratings
+                  .filter(rating => rating.comment)
+                  .map((rating, index) => (
+                  <Paper
+                    key={index}
+                    sx={{
+                      p: 2,
+                      borderLeft: "4px solid",
+                      borderColor: "primary.main",
+                      backgroundColor: "rgba(25, 118, 210, 0.04)",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                      <Avatar
+                        src={rating.user?.avatar_url}
+                        alt={rating.user?.name}
+                        sx={{ width: 32, height: 32 }}
+                      />
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        {rating.user?.name}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {rating.comment}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            </>
+          )}
         </Box>
       </Card>
     </Container>

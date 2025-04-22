@@ -21,11 +21,7 @@ export interface Cake {
         name: string;
         avatar_url: string;
     };
-    ratings?: Array<{
-        appearance: number;
-        taste: number;
-        theme_adherence: number;
-    }>;
+    ratings?: Rating[];
 }
 
 export interface CakeRating {
@@ -46,6 +42,7 @@ export interface Rating {
     appearance: number;
     taste: number;
     theme_adherence: number;
+    comment: string;
     created_at: string;
 }
 
