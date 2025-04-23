@@ -10,6 +10,7 @@ import { ThemeProvider } from "@context/ThemeContext";
 import { Navigation } from "@components/Navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useSession, useUserDetails, useHasRole } from "@hooks/useAuthQuery";
+import { ToastProvider } from "@components/Toast";
 
 // Lazy load all pages
 const Login = lazy(() => import("@pages/Login").then(module => ({ default: module.Login })));
@@ -173,7 +174,9 @@ export default function App() {
   return (
     <Router basename="/cake-rate/">
       <ThemeProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </ThemeProvider>
     </Router>
   );

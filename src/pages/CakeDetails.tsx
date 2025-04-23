@@ -128,30 +128,36 @@ export function CakeDetails() {
 
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
-              Notes moyennes
+              {ratings && ratings.length > 0 ? "Notes moyennes" : "Pas de note pour le moment"}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography variant="body1">Apparence:</Typography>
-                <Rating value={averageAppearance} precision={0.5} readOnly />
-                <Typography variant="body2" color="text.secondary">
-                  ({averageAppearance.toFixed(1)})
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography variant="body1">Goût:</Typography>
-                <Rating value={averageTaste} precision={0.5} readOnly />
-                <Typography variant="body2" color="text.secondary">
-                  ({averageTaste.toFixed(1)})
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography variant="body1">Respect du thème:</Typography>
-                <Rating value={averageTheme} precision={0.5} readOnly />
-                <Typography variant="body2" color="text.secondary">
-                  ({averageTheme.toFixed(1)})
-                </Typography>
-              </Box>
+              {ratings && ratings.some(rating => rating.appearance !== undefined) && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="body1">Apparence:</Typography>
+                  <Rating value={averageAppearance} precision={0.5} readOnly />
+                  <Typography variant="body2" color="text.secondary">
+                    ({averageAppearance.toFixed(1)})
+                  </Typography>
+                </Box>
+              )}
+              {ratings && ratings.some(rating => rating.taste !== undefined) && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="body1">Goût:</Typography>
+                  <Rating value={averageTaste} precision={0.5} readOnly />
+                  <Typography variant="body2" color="text.secondary">
+                    ({averageTaste.toFixed(1)})
+                  </Typography>
+                </Box>
+              )}
+              {ratings && ratings.some(rating => rating.theme_adherence !== undefined) && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="body1">Respect du thème:</Typography>
+                  <Rating value={averageTheme} precision={0.5} readOnly />
+                  <Typography variant="body2" color="text.secondary">
+                    ({averageTheme.toFixed(1)})
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
 
@@ -164,30 +170,30 @@ export function CakeDetails() {
                 {ratings
                   .filter(rating => rating.comment)
                   .map((rating, index) => (
-                  <Paper
-                    key={index}
-                    sx={{
-                      p: 2,
-                      borderLeft: "4px solid",
-                      borderColor: "primary.main",
-                      backgroundColor: "rgba(25, 118, 210, 0.04)",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                      <Avatar
-                        src={rating.user?.avatar_url}
-                        alt={rating.user?.name}
-                        sx={{ width: 32, height: 32 }}
-                      />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {rating.user?.name}
+                    <Paper
+                      key={index}
+                      sx={{
+                        p: 2,
+                        borderLeft: "4px solid",
+                        borderColor: "primary.main",
+                        backgroundColor: "rgba(25, 118, 210, 0.04)",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                        <Avatar
+                          src={rating.user?.avatar_url}
+                          alt={rating.user?.name}
+                          sx={{ width: 32, height: 32 }}
+                        />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          {rating.user?.name}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {rating.comment}
                       </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {rating.comment}
-                    </Typography>
-                  </Paper>
-                ))}
+                    </Paper>
+                  ))}
               </Box>
             </>
           )}

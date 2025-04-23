@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
 import { Navigate } from "react-router-dom";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
   Container,
@@ -8,7 +9,6 @@ import {
   Tabs,
   Tab,
   CircularProgress,
-  Alert,
   Fade,
   Slide,
 } from "@mui/material";
@@ -60,8 +60,8 @@ function a11yProps(index: number) {
 
 export function Admin() {
   const isAdmin = useHasRole("ADMIN");
+  const { handleError } = useErrorHandler();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -69,16 +69,18 @@ export function Admin() {
     setTabValue(newValue);
   };
 
+  const handleAdminError = useCallback(() => {
+    handleError("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
+    setLoading(false);
+  }, [handleError]);
+
   useEffect(() => {
     if (!isAdmin) {
-      setError(
-        "Vous n'avez pas les permissions nécessaires pour accéder à cette page"
-      );
-      setLoading(false);
+      handleAdminError();
       return;
     }
     setLoading(false);
-  }, [isAdmin]);
+  }, [isAdmin, handleAdminError]);
 
   if (loading) {
     return (
@@ -93,39 +95,59 @@ export function Admin() {
     );
   }
 
-  if (error) {
-    return (
-      <Container>
-        <Alert severity="error" sx={{ mt: 4 }}>
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
   if (!isAdmin) {
     return <Navigate to="/" />;
   }
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{
+        py: { xs: 2, sm: 4 },
+        px: { xs: 1, sm: 2 }
+      }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1.5rem', sm: '2rem' },
+            textAlign: { xs: 'center', sm: 'left' }
+          }}
+        >
           Administration
         </Typography>
 
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+          overflowX: 'auto',
+          '&::-webkit-scrollbar': {
+            height: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '4px',
+          },
+        }}>
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
             aria-label="admin tabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
+              minHeight: { xs: 48, sm: 64 },
               '& .MuiTab-root': {
                 color: 'primary.main',
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
                 textTransform: 'none',
-                minHeight: 48,
-                px: 3,
+                minHeight: { xs: 48, sm: 64 },
+                px: { xs: 2, sm: 3 },
+                whiteSpace: 'nowrap',
                 '&.Mui-selected': {
                   color: 'text.secondary',
                   fontWeight: 'bold',
@@ -135,6 +157,12 @@ export function Admin() {
                 backgroundColor: 'text.secondary',
                 height: 3,
                 borderRadius: '3px 3px 0 0',
+              },
+              '& .MuiTabs-scrollButtons': {
+                color: 'primary.main',
+                '&.Mui-disabled': {
+                  opacity: 0.3,
+                },
               },
             }}
           >

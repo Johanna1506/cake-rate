@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useUserDetails, useUpdateUser, useSession } from '@hooks/useAuthQuery';
 import { uploadAvatar } from '@services/storage';
+import { useErrorHandler } from '@hooks/useErrorHandler';
 import {
     Container,
     Box,
     Typography,
     TextField,
     Button,
-    Alert,
     CircularProgress,
     Card,
     CardContent,
@@ -73,14 +73,16 @@ export function Profile() {
     const userId = session?.session?.user?.id;
     const { data: userDetails, isLoading, error } = useUserDetails(userId || '');
     const updateUser = useUpdateUser();
+    const { handleError, handleSuccess } = useErrorHandler();
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState('');
+    const [nameError, setNameError] = useState('');
+    const [nameTouched, setNameTouched] = useState(false);
     const [email, setEmail] = useState('');
     const [avatar, setAvatar] = useState<File | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (userDetails) {
@@ -90,9 +92,37 @@ export function Profile() {
         }
     }, [userDetails]);
 
+    const validateForm = () => {
+        let isValid = true;
+
+        if (!name.trim()) {
+            setNameError('Le nom est requis');
+            isValid = false;
+        } else if (name.length < 2) {
+            setNameError('Le nom doit contenir au moins 2 caractères');
+            isValid = false;
+        } else {
+            setNameError('');
+        }
+
+        return isValid;
+    };
+
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            // Vérifier la taille du fichier (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                handleError('L\'image ne doit pas dépasser 2MB');
+                return;
+            }
+
+            // Vérifier le type de fichier
+            if (!file.type.startsWith('image/')) {
+                handleError('Le fichier doit être une image');
+                return;
+            }
+
             setAvatar(file);
             setAvatarUrl(URL.createObjectURL(file));
         }
@@ -100,10 +130,13 @@ export function Profile() {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setErrorMessage(null);
-        setSuccessMessage(null);
+
+        if (!validateForm()) {
+            return;
+        }
 
         try {
+            setLoading(true);
             let avatarUrlToUpdate = avatarUrl;
             if (avatar && userId) {
                 avatarUrlToUpdate = await uploadAvatar(avatar, userId);
@@ -116,11 +149,12 @@ export function Profile() {
                 });
             }
 
-            setSuccessMessage('Profil mis à jour avec succès');
+            handleSuccess('Profil mis à jour avec succès');
             setIsEditing(false);
-        } catch (error) {
-            setErrorMessage('Erreur lors de la mise à jour du profil');
-            console.error(error);
+        } catch (err) {
+            handleError(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -145,9 +179,9 @@ export function Profile() {
     if (error) {
         return (
             <StyledContainer>
-                <Alert severity="error">
+                <Typography color="error">
                     Erreur lors du chargement du profil
-                </Alert>
+                </Typography>
             </StyledContainer>
         );
     }
@@ -237,8 +271,17 @@ export function Profile() {
                                 label="Nom"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                onBlur={() => setNameTouched(true)}
+                                error={!!nameError && nameTouched}
+                                helperText={nameTouched && nameError}
                                 fullWidth
                                 variant="outlined"
+                                sx={{
+                                    '& .MuiFormHelperText-root': {
+                                        marginLeft: 0,
+                                        marginRight: 0
+                                    }
+                                }}
                             />
 
                             <TextField
@@ -249,35 +292,22 @@ export function Profile() {
                                 variant="outlined"
                             />
 
-                            {errorMessage && (
-                                <Alert severity="error">{errorMessage}</Alert>
-                            )}
-
-                            {successMessage && (
-                                <Alert severity="success">{successMessage}</Alert>
-                            )}
-
-                            <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                                 <Button
-                                    type="button"
                                     variant="outlined"
                                     onClick={() => setIsEditing(false)}
                                     fullWidth
+                                    disabled={loading}
                                 >
                                     Annuler
                                 </Button>
                                 <Button
                                     type="submit"
                                     variant="contained"
-                                    color="primary"
-                                    disabled={updateUser.isPending}
                                     fullWidth
+                                    disabled={loading}
                                 >
-                                    {updateUser.isPending ? (
-                                        <CircularProgress size={24} />
-                                    ) : (
-                                        'Enregistrer'
-                                    )}
+                                    {loading ? <CircularProgress size={24} /> : 'Enregistrer'}
                                 </Button>
                             </Box>
                         </Form>

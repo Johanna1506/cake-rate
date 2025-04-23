@@ -24,12 +24,17 @@ export function CakeDetails({ cake, week, currentUser, onVote }: CakeDetailsProp
       borderRadius: 2,
       p: 2
     }}>
-      <Box sx={{ display: 'flex', gap: 4 }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: { xs: 2, md: 4 },
+        alignItems: { xs: 'center', md: 'flex-start' }
+      }}>
         <CardMedia
           component="img"
           sx={{
-            width: 250,
-            height: 250,
+            width: { xs: '100%', sm: 300, md: 250 },
+            height: { xs: 200, sm: 300, md: 250 },
             objectFit: 'cover',
             borderRadius: 2,
             boxShadow: 2
@@ -37,7 +42,11 @@ export function CakeDetails({ cake, week, currentUser, onVote }: CakeDetailsProp
           image={cake.image_url}
           alt={cake.name}
         />
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{
+          flex: 1,
+          width: '100%',
+          textAlign: { xs: 'center', md: 'left' }
+        }}>
           <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
             {cake.name}
           </Typography>
@@ -56,7 +65,8 @@ export function CakeDetails({ cake, week, currentUser, onVote }: CakeDetailsProp
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 3,
-                py: 1
+                py: 1,
+                width: { xs: '100%', sm: 'auto' }
               }}
             >
               {userRating ? "Modifier mon vote" : "Voter"}

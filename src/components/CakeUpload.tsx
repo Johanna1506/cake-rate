@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@hooks/useAuthQuery';
 import { useCurrentWeek } from '@hooks/useWeekQuery';
 import { useQueryClient } from '@tanstack/react-query';
+import { useErrorHandler } from '@hooks/useErrorHandler';
 import {
     Box,
     Button,
     TextField,
     Typography,
-    Alert,
     CircularProgress,
     IconButton,
 } from '@mui/material';
@@ -25,16 +25,50 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     const queryClient = useQueryClient();
     const { data: session } = useSession();
     const { data: currentWeek, isLoading: weekLoading, error: weekError } = useCurrentWeek();
+    const { handleError, handleSuccess } = useErrorHandler();
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [description, setDescription] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [descriptionError, setDescriptionError] = useState('');
+    const [descriptionTouched, setDescriptionTouched] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const validateForm = () => {
+        let isValid = true;
+
+        if (!file) {
+            handleError('Veuillez sélectionner une photo');
+            isValid = false;
+        }
+
+        if (!description.trim()) {
+            setDescriptionError('La description est requise');
+            isValid = false;
+        } else if (description.length < 10) {
+            setDescriptionError('La description doit contenir au moins 10 caractères');
+            isValid = false;
+        } else {
+            setDescriptionError('');
+        }
+
+        return isValid;
+    };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
+            // Vérifier la taille du fichier (max 5MB)
+            if (selectedFile.size > 5 * 1024 * 1024) {
+                handleError('L\'image ne doit pas dépasser 5MB');
+                return;
+            }
+
+            // Vérifier le type de fichier
+            if (!selectedFile.type.startsWith('image/')) {
+                handleError('Le fichier doit être une image');
+                return;
+            }
+
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
         }
@@ -50,21 +84,21 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!file) return;
 
-        setError(null);
-        setSuccess(false);
+        if (!validateForm()) {
+            return;
+        }
 
         try {
             setLoading(true);
 
-            const fileExt = file.name.split('.').pop();
+            const fileExt = file!.name.split('.').pop();
             const fileName = `${session?.session?.user?.id}/${Math.random()}.${fileExt}`;
             const filePath = fileName;
 
             const { error: uploadError } = await supabaseServer.storage
                 .from('cakes')
-                .upload(filePath, file);
+                .upload(filePath, file!);
 
             if (uploadError) throw uploadError;
 
@@ -87,7 +121,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
             await queryClient.invalidateQueries({ queryKey: ['cakes'] });
             await queryClient.invalidateQueries({ queryKey: ['weekCake'] });
 
-            setSuccess(true);
+            handleSuccess('Le gâteau a été ajouté avec succès !');
             setFile(null);
             setDescription('');
             if (previewUrl) {
@@ -99,7 +133,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                 onClose();
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            handleError(err);
         } finally {
             setLoading(false);
         }
@@ -130,9 +164,9 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     if (weekError) {
         return (
             <Box sx={{ textAlign: 'center', p: 4 }}>
-                <Alert severity="error">
+                <Typography color="error">
                     Une erreur est survenue lors du chargement de la semaine en cours.
-                </Alert>
+                </Typography>
             </Box>
         );
     }
@@ -140,9 +174,9 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     if (!currentWeek) {
         return (
             <Box sx={{ textAlign: 'center', p: 4 }}>
-                <Alert severity="info">
+                <Typography color="info">
                     Aucune semaine active en cours.
-                </Alert>
+                </Typography>
             </Box>
         );
     }
@@ -150,21 +184,38 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
     if (currentWeek.user_id !== session.session.user.id) {
         return (
             <Box sx={{ textAlign: 'center', p: 4 }}>
-                <Alert severity="warning">
+                <Typography color="warning">
                     Vous n'êtes pas le participant de la semaine en cours.
-                </Alert>
+                </Typography>
             </Box>
         );
     }
 
     return (
-        <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
-            <Typography variant="h4" gutterBottom align="center">
+        <Box sx={{
+            maxWidth: 600,
+            mx: 'auto',
+            p: { xs: 2, sm: 3 },
+            width: '100%'
+        }}>
+            <Typography variant="h4" gutterBottom align="center" sx={{
+                fontSize: { xs: '1.5rem', sm: '2rem' },
+                mb: { xs: 2, sm: 3 }
+            }}>
                 Ajouter votre gâteau
             </Typography>
 
-            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                <Box sx={{ mb: 3 }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{
+                mt: { xs: 2, sm: 3 },
+                display: 'flex',
+                flexDirection: 'column',
+                gap: { xs: 2, sm: 3 }
+            }}>
+                <Box sx={{
+                    mb: { xs: 2, sm: 3 },
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
                     <input
                         accept="image/*"
                         style={{ display: 'none' }}
@@ -173,20 +224,38 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                         onChange={handleFileChange}
                     />
                     <label htmlFor="cake-image">
-                        <Button variant="contained" component="span">
+                        <Button
+                            variant="contained"
+                            component="span"
+                            sx={{
+                                py: { xs: 1, sm: 1.5 },
+                                px: { xs: 2, sm: 3 },
+                                fontSize: { xs: '0.875rem', sm: '1rem' }
+                            }}
+                        >
                             Sélectionner une photo
                         </Button>
                     </label>
                 </Box>
 
                 {previewUrl && (
-                    <Box sx={{ maxWidth: 345, mb: 3, position: 'relative' }}>
+                    <Box sx={{
+                        maxWidth: { xs: '100%', sm: 345 },
+                        mb: { xs: 2, sm: 3 },
+                        position: 'relative',
+                        mx: 'auto',
+                        width: '100%'
+                    }}>
                         <Box
                             component="img"
-                            height="194"
                             src={previewUrl}
                             alt="Preview"
-                            sx={{ width: '100%', objectFit: 'cover' }}
+                            sx={{
+                                width: '100%',
+                                height: { xs: '200px', sm: '300px' },
+                                objectFit: 'cover',
+                                borderRadius: 1
+                            }}
                         />
                         <IconButton
                             onClick={handleRemoveFile}
@@ -198,9 +267,11 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                                 '&:hover': {
                                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                 },
+                                width: { xs: 32, sm: 40 },
+                                height: { xs: 32, sm: 40 }
                             }}
                         >
-                            <DeleteIcon />
+                            <DeleteIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
                         </IconButton>
                     </Box>
                 )}
@@ -211,38 +282,59 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                     multiline
                     rows={4}
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    sx={{ mb: 3 }}
+                    onChange={(e) => {
+                        setDescription(e.target.value);
+                        if (descriptionTouched) {
+                            if (!e.target.value.trim()) {
+                                setDescriptionError('La description est requise');
+                            } else if (e.target.value.length < 10) {
+                                setDescriptionError('La description doit contenir au moins 10 caractères');
+                            } else {
+                                setDescriptionError('');
+                            }
+                        }
+                    }}
+                    onBlur={() => setDescriptionTouched(true)}
+                    error={!!descriptionError}
+                    helperText={descriptionError}
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }
+                    }}
                 />
 
-                {error && (
-                    <Alert severity="error" sx={{ mb: 3 }}>
-                        {error}
-                    </Alert>
-                )}
-
-                {success && (
-                    <Alert severity="success" sx={{ mb: 3 }}>
-                        Le gâteau a été ajouté avec succès !
-                    </Alert>
-                )}
-
-                <Box sx={{ display: "flex", gap: 2 }}>
-                    <Button
-                        variant="outlined"
-                        onClick={onClose}
-                        fullWidth
-                        disabled={loading}
-                    >
-                        Annuler
-                    </Button>
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    mt: 2,
+                    flexDirection: { xs: 'column', sm: 'row' }
+                }}>
+                    {onClose && (
+                        <Button
+                            variant="outlined"
+                            onClick={onClose}
+                            fullWidth
+                            disabled={loading}
+                            sx={{
+                                py: { xs: 1, sm: 1.5 },
+                                fontSize: { xs: '0.875rem', sm: '1rem' }
+                            }}
+                        >
+                            Annuler
+                        </Button>
+                    )}
                     <Button
                         type="submit"
                         variant="contained"
                         fullWidth
-                        disabled={loading || !file}
+                        disabled={loading}
+                        sx={{
+                            py: { xs: 1, sm: 1.5 },
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
                     >
-                        {loading ? <CircularProgress size={24} /> : 'Ajouter le gâteau'}
+                        {loading ? <CircularProgress size={24} /> : "Ajouter le gâteau"}
                     </Button>
                 </Box>
             </Box>

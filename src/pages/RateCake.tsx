@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { Cake, Week } from "../types";
 import { CakeRatingForm } from "../components/CakeRatingForm";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
   Container,
@@ -11,14 +12,13 @@ import {
   CardContent,
   CardMedia,
   CircularProgress,
-  Alert,
 } from "@mui/material";
 
 export function RateCake() {
   const { cakeId } = useParams();
+  const { handleError } = useErrorHandler();
   const [cakes, setCakes] = useState<(Cake & { week: Week })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedCake, setSelectedCake] = useState<Cake | null>(null);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function RateCake() {
       if (error) throw error;
       setCakes(data as (Cake & { week: Week })[]);
     } catch (err) {
-      setError("Erreur lors du chargement des gâteaux.");
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -63,16 +63,6 @@ export function RateCake() {
       <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
         <CircularProgress />
       </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="md">
-        <Alert severity="error" sx={{ mt: 4 }}>
-          {error}
-        </Alert>
-      </Container>
     );
   }
 

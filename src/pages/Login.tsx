@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSignIn } from '@hooks/useAuthQuery';
+import { useErrorHandler } from '@hooks/useErrorHandler';
 import {
     Box,
     Button,
@@ -8,7 +9,6 @@ import {
     TextField,
     Typography,
     Paper,
-    Alert,
     CircularProgress,
     Stack,
     Link as MuiLink,
@@ -40,20 +40,54 @@ const StyledButton = styled(Button)(({ theme }) => ({
 export function Login() {
     const navigate = useNavigate();
     const signIn = useSignIn();
+    const { handleError, handleSuccess } = useErrorHandler();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [emailTouched, setEmailTouched] = useState(false);
+    const [passwordTouched, setPasswordTouched] = useState(false);
+
+    const validateForm = () => {
+        let isValid = true;
+
+        if (!email) {
+            setEmailError('L\'adresse email est requise');
+            isValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            setEmailError('Format d\'adresse email invalide');
+            isValid = false;
+        } else {
+            setEmailError('');
+        }
+
+        if (!password) {
+            setPasswordError('Le mot de passe est requis');
+            isValid = false;
+        } else if (password.length < 6) {
+            setPasswordError('Le mot de passe doit contenir au moins 6 caractères');
+            isValid = false;
+        } else {
+            setPasswordError('');
+        }
+
+        return isValid;
+    };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setError(null);
+
+        if (!validateForm()) {
+            return;
+        }
 
         try {
             await signIn.mutateAsync({ email, password });
+            handleSuccess('Connexion réussie !');
             navigate('/');
-        } catch (err: any) {
-            setError(err.message || 'Une erreur est survenue lors de la connexion');
+        } catch (err) {
+            handleError(err);
         }
     };
 
@@ -83,15 +117,35 @@ export function Login() {
                             autoFocus
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            onBlur={() => setEmailTouched(true)}
+                            error={!!emailError && emailTouched}
+                            helperText={emailTouched && emailError}
+                            sx={{
+                                mb: 1,
+                                '& .MuiFormHelperText-root': {
+                                    marginLeft: 0,
+                                    marginRight: 0
+                                }
+                            }}
                         />
+
                         <TextField
                             fullWidth
                             label="Mot de passe"
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onBlur={() => setPasswordTouched(true)}
                             margin="normal"
                             required
+                            error={!!passwordError && passwordTouched}
+                            helperText={passwordTouched && passwordError}
+                            sx={{
+                                '& .MuiFormHelperText-root': {
+                                    marginLeft: 0,
+                                    marginRight: 0
+                                }
+                            }}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -106,11 +160,7 @@ export function Login() {
                                 ),
                             }}
                         />
-                        {error && (
-                            <Alert severity="error" sx={{ mt: 2 }}>
-                                {error}
-                            </Alert>
-                        )}
+
                         <StyledButton
                             type="submit"
                             fullWidth

@@ -53,6 +53,9 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   boxShadow: theme.palette.mode === 'dark'
     ? '0 2px 10px rgba(0, 0, 0, 0.2)'
     : '0 2px 10px rgba(0, 0, 0, 0.1)',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0, 1),
+  },
 }));
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -62,6 +65,9 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   padding: theme.spacing(0, 2),
   [theme.breakpoints.up('md')]: {
     padding: theme.spacing(0, 4),
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0, 1),
   },
 }));
 
@@ -76,11 +82,15 @@ const LogoContainer = styled(Link)(() => ({
   },
 }));
 
-const Logo = styled("img")({
+const Logo = styled("img")(({ theme }) => ({
   height: 45,
   marginRight: 12,
   transition: 'all 0.3s ease-in-out',
-});
+  [theme.breakpoints.down('sm')]: {
+    height: 35,
+    marginRight: 8,
+  },
+}));
 
 const NavLinks = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -101,6 +111,10 @@ const NavButton = styled(Button)<{ component?: React.ElementType; to?: string }>
   '&:hover .MuiButton-startIcon': {
     transform: 'scale(1.1)',
   },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.5, 1),
+    fontSize: '0.875rem',
+  },
 }));
 
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
@@ -116,13 +130,19 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    width: 280,
+    width: '100%',
+    maxWidth: 280,
     borderRadius: '20px 0 0 20px',
     backgroundColor: theme.palette.mode === 'dark'
       ? alpha(theme.palette.background.paper, 0.95)
       : alpha(theme.palette.background.paper, 0.98),
     backdropFilter: 'blur(10px)',
     borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      maxWidth: '100%',
+      borderRadius: 0,
+    },
   },
 }));
 
@@ -315,12 +335,12 @@ export function Navigation() {
             </ListItemButton>
             <ListItemButton onClick={() => setOpen(!open)}>
               <ListItemIcon>
-                   <StyledAvatar
-                    src={userDetails?.avatar_url || undefined}
-                    alt={userDetails?.name || "Avatar"}
-                  >
-                    {userDetails?.name?.[0] || "U"}
-                  </StyledAvatar>
+                <StyledAvatar
+                  src={userDetails?.avatar_url || undefined}
+                  alt={userDetails?.name || "Avatar"}
+                >
+                  {userDetails?.name?.[0] || "U"}
+                </StyledAvatar>
               </ListItemIcon>
               <ListItemText primary={userDetails?.name || "Profil"} />
               {open ? <ExpandLess /> : <ExpandMore />}

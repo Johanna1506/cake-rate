@@ -2,16 +2,15 @@ import { useState, useEffect } from "react";
 import { useSession } from "@hooks/useAuthQuery";
 import { useRateCake, useCakeRatings, useCake } from "@hooks/useCakeQuery";
 import { useNavigate } from "react-router-dom";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
   Button,
   TextField,
   Typography,
   Rating,
-  Alert,
   CircularProgress,
   Stack,
-  Snackbar,
   CardMedia,
   Chip,
   Avatar,
@@ -29,25 +28,25 @@ interface CustomRatingProps {
   onChange: (value: number | null) => void;
   max: number;
   label: string;
+  error?: boolean;
+  helperText?: string;
 }
 
-function CustomRating({ value, onChange, max, label }: CustomRatingProps) {
+function CustomRating({ value, onChange, max, label, error, helperText }: CustomRatingProps) {
   const handleChange = (_: React.SyntheticEvent, newValue: number | null) => {
     if (newValue === null) {
       onChange(null);
       return;
     }
-    // Convertir la valeur de 5 étoiles à l'échelle souhaitée
     const convertedValue = (newValue / 5) * max;
     onChange(convertedValue);
   };
 
-  // Convertir la valeur de l'échelle souhaitée à 5 étoiles
   const displayValue = value === null ? null : (value / max) * 5;
 
   return (
     <Box>
-      <Typography component="legend" gutterBottom>
+      <Typography component="legend" gutterBottom color={error ? "error" : "text.primary"}>
         {label} (sur {max})
       </Typography>
       <Rating
@@ -61,6 +60,11 @@ function CustomRating({ value, onChange, max, label }: CustomRatingProps) {
           Note : {value.toFixed(1)}/{max}
         </Typography>
       )}
+      {error && helperText && (
+        <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+          {helperText}
+        </Typography>
+      )}
     </Box>
   );
 }
@@ -71,30 +75,32 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
   const { data: ratings } = useCakeRatings(cakeId);
   const { data: cake } = useCake(cakeId);
   const navigate = useNavigate();
+  const { handleError, handleSuccess } = useErrorHandler();
   const [appearance, setAppearance] = useState<number | null>(null);
   const [taste, setTaste] = useState<number | null>(null);
   const [themeAdherence, setThemeAdherence] = useState<number | null>(null);
   const [comment, setComment] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [commentError, setCommentError] = useState("");
+  const [commentTouched, setCommentTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Calculer la note globale
+  // Validation states
+  const [appearanceError, setAppearanceError] = useState("");
+  const [tasteError, setTasteError] = useState("");
+  const [themeAdherenceError, setThemeAdherenceError] = useState("");
+
   const calculateTotalScore = () => {
     if (appearance === null || taste === null || themeAdherence === null) {
       return null;
     }
-    // Convertir chaque note en pourcentage de sa valeur maximale
-    const appearanceScore = (appearance / 2.5) * 2.5; // 25% de la note finale
-    const tasteScore = (taste / 5) * 5; // 50% de la note finale
-    const themeScore = (themeAdherence / 2.5) * 2.5; // 25% de la note finale
-
-    // Additionner les scores
+    const appearanceScore = (appearance / 2.5) * 2.5;
+    const tasteScore = (taste / 5) * 5;
+    const themeScore = (themeAdherence / 2.5) * 2.5;
     return appearanceScore + tasteScore + themeScore;
   };
 
   const totalScore = calculateTotalScore();
 
-  // Charger le vote existant de l'utilisateur
   useEffect(() => {
     if (session?.session?.user?.id && ratings) {
       const userRating = ratings.find(
@@ -109,38 +115,69 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
     }
   }, [session?.session?.user?.id, ratings]);
 
+  const validateForm = () => {
+    let isValid = true;
+
+    if (appearance === null) {
+      setAppearanceError("Veuillez noter l'apparence");
+      isValid = false;
+    } else {
+      setAppearanceError("");
+    }
+
+    if (taste === null) {
+      setTasteError("Veuillez noter le goût");
+      isValid = false;
+    } else {
+      setTasteError("");
+    }
+
+    if (themeAdherence === null) {
+      setThemeAdherenceError("Veuillez noter le respect du thème");
+      isValid = false;
+    } else {
+      setThemeAdherenceError("");
+    }
+
+    if (!comment.trim()) {
+      setCommentError("Veuillez ajouter un commentaire");
+      isValid = false;
+    } else if (comment.length < 10) {
+      setCommentError("Le commentaire doit contenir au moins 10 caractères");
+      isValid = false;
+    } else {
+      setCommentError("");
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!appearance || !taste || !themeAdherence) {
-      setError("Veuillez noter tous les critères");
+
+    if (!validateForm()) {
       return;
     }
 
     try {
+      setLoading(true);
       await rateCake.mutateAsync({
         cakeId,
         rating: {
           cake_id: cakeId,
-          appearance,
-          taste,
-          theme_adherence: themeAdherence,
+          appearance: appearance!,
+          taste: taste!,
+          theme_adherence: themeAdherence!,
           comment,
         },
       });
-      setSuccess(true);
-      // Fermer le modal après 2 secondes
-      setTimeout(() => {
-        if (onClose) {
-          onClose();
-        } else {
-          navigate("/");
-        }
-      }, 2000);
-    } catch (err: any) {
-      setError(
-        err.message ||
-          "Une erreur est survenue lors de l'enregistrement de votre note"
-      );
+      handleSuccess("Votre note a été enregistrée avec succès !");
+      onClose ? onClose() : navigate("/");
+
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,32 +190,56 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom align="center">
+    <Box sx={{
+      p: { xs: 1, sm: 2 },
+      maxWidth: '100%',
+      overflow: 'hidden'
+    }}>
+      <Typography variant="h5" gutterBottom align="center" sx={{
+        fontSize: { xs: '1.25rem', sm: '1.5rem' },
+        mb: 1
+      }}>
         {ratings?.some((r) => r.user_id === session?.session?.user?.id)
           ? "Modifier votre note"
           : "Noter le gâteau"}
       </Typography>
 
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{
+        mb: { xs: 2, sm: 4 },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: { xs: 2, sm: 3 }
+      }}>
         <CardMedia
           component="img"
           height="300"
           image={cake.image_url}
           alt={cake.description}
-          sx={{ objectFit: "cover", borderRadius: 1, mb: 2 }}
+          sx={{
+            objectFit: "cover",
+            borderRadius: 1,
+            mb: 2,
+            height: { xs: '200px', sm: '300px' }
+          }}
         />
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          mb: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
           <Avatar
             src={cake.user?.avatar_url}
             alt={cake.user?.name}
             sx={{ width: 40, height: 40 }}
           />
-          <Typography variant="h6">
+          <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             Gâteau réalisé par {cake.user?.name}
           </Typography>
         </Box>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
           {cake.name}
         </Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom>
@@ -195,10 +256,14 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
             "& .MuiChip-label": {
               px: 2,
             },
+            alignSelf: { xs: 'center', sm: 'flex-start' }
           }}
         />
         {cake.week && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{
+            mt: 1,
+            textAlign: { xs: 'center', sm: 'left' }
+          }}>
             {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
               locale: fr,
             })}
@@ -210,93 +275,87 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
         )}
       </Box>
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-        <Stack spacing={2}>
+      <Box component="form" onSubmit={handleSubmit} sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: { xs: 2, sm: 3 }
+      }}>
+        <Stack spacing={3}>
           <CustomRating
             value={appearance}
             onChange={setAppearance}
             max={2.5}
             label="Apparence"
+            error={!!appearanceError}
+            helperText={appearanceError}
           />
-
           <CustomRating
             value={taste}
             onChange={setTaste}
             max={5}
             label="Goût"
+            error={!!tasteError}
+            helperText={tasteError}
           />
-
           <CustomRating
             value={themeAdherence}
             onChange={setThemeAdherence}
             max={2.5}
             label="Respect du thème"
+            error={!!themeAdherenceError}
+            helperText={themeAdherenceError}
           />
-
-          {totalScore !== null && (
-            <Box sx={{
-              p: 2,
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              textAlign: 'center'
-            }}>
-              <Typography variant="body1" color="text.secondary">
-                Note globale
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                {totalScore.toFixed(1)}/10
-              </Typography>
-            </Box>
-          )}
-
-          <TextField
-            fullWidth
-            label="Commentaire"
-            multiline
-            rows={4}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-
-          {error && <Alert severity="error">{error}</Alert>}
-
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={rateCake.isPending}
-            fullWidth
-            size="large"
-          >
-            {rateCake.isPending ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : ratings?.some(
-                (r) => r.user_id === session?.session?.user?.id
-              ) ? (
-              "Modifier ma note"
-            ) : (
-              "Noter"
-            )}
-          </Button>
         </Stack>
-      </Box>
 
-      <Snackbar
-        open={success}
-        autoHideDuration={2000}
-        onClose={() => setSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSuccess(false)}
-          severity="success"
-          sx={{ width: "100%" }}
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          label="Commentaire"
+          value={comment}
+          onChange={(e) => {
+            setComment(e.target.value);
+            if (commentTouched) {
+              if (!e.target.value.trim()) {
+                setCommentError("Veuillez ajouter un commentaire");
+              } else if (e.target.value.length < 10) {
+                setCommentError("Le commentaire doit contenir au moins 10 caractères");
+              } else {
+                setCommentError("");
+              }
+            }
+          }}
+          onBlur={() => setCommentTouched(true)}
+          error={!!commentError}
+          helperText={commentError}
+          sx={{
+            mt: 2,
+            '& .MuiInputBase-root': {
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }
+          }}
+        />
+
+        {totalScore !== null && (
+          <Typography variant="h6" align="center" sx={{ mt: 2 }}>
+            Note totale : {totalScore.toFixed(1)}/10
+          </Typography>
+        )}
+
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={loading}
+          sx={{
+            mt: 2,
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
         >
-          Votre note a bien été enregistrée ! Redirection vers l'accueil...
-        </Alert>
-      </Snackbar>
+          {loading ? <CircularProgress size={24} /> : "Enregistrer la note"}
+        </Button>
+      </Box>
     </Box>
   );
 }

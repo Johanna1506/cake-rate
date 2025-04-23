@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogContent,
   Typography,
-  Chip,
   IconButton,
 } from "@mui/material";
 import { format } from "date-fns";
@@ -98,17 +97,7 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-              <Chip
-                label="Semaine en cours"
-                color="success"
-                size="small"
-                sx={{
-                  fontWeight: 600,
-                  '& .MuiChip-label': {
-                    px: 2
-                  }
-                }}
-              />
+
               {week.user?.id === currentUser?.id && !cake && (
                 <Button
                   variant="contained"

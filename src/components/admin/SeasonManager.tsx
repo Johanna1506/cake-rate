@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useIsAdmin } from "@hooks/useAuthQuery";
 import { useSeasons } from "@hooks/useSeasons";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import type { Season, Week } from "../../types";
 import {
   Box,
@@ -85,6 +86,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const theme = useTheme();
   const { seasons, loading: seasonsLoading, error: seasonsError, loadData, saveSeason, deleteSeason } = useSeasons();
   const isAdmin = useIsAdmin();
+  const { handleError, handleSuccess } = useErrorHandler();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentSeason, setCurrentSeason] = useState<Season | null>(null);
@@ -92,10 +94,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const [participantCount, setParticipantCount] = useState(1);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seasonToDelete, setSeasonToDelete] = useState<Season | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [weeks, setWeeks] = useState<WeekFormData[]>([
     {
       description: "",
@@ -156,8 +157,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
-    setError(null);
-    setSuccess(null);
     setFormErrors({});
   };
 
@@ -169,8 +168,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
     setSeasonToDelete(null);
-    setError(null);
-    setSuccess(null);
   };
 
   const fetchUsers = async () => {
@@ -183,7 +180,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       if (error) throw error;
       setUsers(data || []);
     } catch (err) {
-      console.error("Erreur lors du chargement des utilisateurs:", err);
+      handleError(err);
     }
   };
 
@@ -253,70 +250,59 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   };
 
   const validateForm = (): boolean => {
-    const errors: {
-      theme?: string;
-      participantCount?: string;
-      weeks?: WeekFormData[];
-    } = {};
+    let isValid = true;
+    const errors: typeof formErrors = {};
 
-    // Validation du thème
     if (!seasonTheme.trim()) {
-      errors.theme = "Le thème de la saison est requis";
+      errors.theme = "Le thème est requis";
+      isValid = false;
+    } else if (seasonTheme.length < 3) {
+      errors.theme = "Le thème doit contenir au moins 3 caractères";
+      isValid = false;
     }
 
-    // Validation du nombre de participants
     if (participantCount < 1) {
-      errors.participantCount = "Le nombre de participants doit être au moins de 1";
+      errors.participantCount = "Le nombre de participants doit être au moins 1";
+      isValid = false;
     }
 
-    // Validation des semaines
-    if (!isEditing) {
-      const weekErrors: WeekFormData[] = weeks.map(week => ({
-        ...week,
-        errors: {}
-      }));
+    const weekErrors = weeks.map((week) => {
+      const weekError: WeekFormData['errors'] = {};
 
-      // Vérification des participants uniques
-      const uniqueParticipants = new Set(weeks.map(week => week.userId));
-      if (uniqueParticipants.size !== weeks.length) {
-        weekErrors.forEach(week => {
-          week.errors = { ...week.errors, userId: "Chaque participant ne peut être assigné qu'à une seule semaine" };
-        });
+      if (!week.description.trim()) {
+        weekError.description = "La description est requise";
+        isValid = false;
       }
 
-      // Validation de chaque semaine
-      weeks.forEach((week, index) => {
-        if (!week.startDate) {
-          weekErrors[index].errors = { ...weekErrors[index].errors, startDate: "La date de début est requise" };
-        }
-        if (!week.endDate) {
-          weekErrors[index].errors = { ...weekErrors[index].errors, endDate: "La date de fin est requise" };
-        }
-        if (week.startDate && week.endDate && week.startDate > week.endDate) {
-          weekErrors[index].errors = { ...weekErrors[index].errors, endDate: "La date de fin doit être postérieure à la date de début" };
-        }
-        if (week.userId === null) {
-          weekErrors[index].errors = { ...weekErrors[index].errors, userId: "Un participant doit être sélectionné" };
-        }
-
-        // Vérification des chevauchements
-        for (let j = index + 1; j < weeks.length; j++) {
-          const otherWeek = weeks[j];
-          if (week.startDate && week.endDate && otherWeek.startDate && otherWeek.endDate &&
-              week.startDate <= otherWeek.endDate && week.endDate >= otherWeek.startDate) {
-            weekErrors[index].errors = { ...weekErrors[index].errors, startDate: "Les semaines ne peuvent pas se chevaucher" };
-            weekErrors[j].errors = { ...weekErrors[j].errors, startDate: "Les semaines ne peuvent pas se chevaucher" };
-          }
-        }
-      });
-
-      if (weekErrors.some(week => Object.keys(week.errors || {}).length > 0)) {
-        errors.weeks = weekErrors;
+      if (!week.startDate) {
+        weekError.startDate = "La date de début est requise";
+        isValid = false;
       }
+
+      if (!week.endDate) {
+        weekError.endDate = "La date de fin est requise";
+        isValid = false;
+      }
+
+      if (week.startDate && week.endDate && week.startDate > week.endDate) {
+        weekError.endDate = "La date de fin doit être postérieure à la date de début";
+        isValid = false;
+      }
+
+      if (week.isActive && !week.userId) {
+        weekError.userId = "Un participant doit être sélectionné pour une semaine active";
+        isValid = false;
+      }
+
+      return { ...week, errors: weekError };
+    });
+
+    if (weekErrors.some(week => Object.keys(week.errors || {}).length > 0)) {
+      errors.weeks = weekErrors;
     }
 
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return isValid;
   };
 
   const handleSubmit = async () => {
@@ -326,9 +312,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
     try {
       setLoading(true);
-      setError(null);
-      setSuccess(null);
-
       const seasonData: Omit<Season, "id"> = {
         theme: seasonTheme,
         participant_count: participantCount,
@@ -336,23 +319,17 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       };
 
       if (isEditing && currentSeason) {
-        await saveSeason(seasonData, currentSeason.id, weeks.map(week => ({
-          ...week,
-          is_active: week.isActive,
-        })));
+        await saveSeason(seasonData, currentSeason.id);
         setSuccess("Saison mise à jour avec succès");
       } else {
-        await saveSeason(seasonData, undefined, weeks.map(week => ({
-          ...week,
-          is_active: week.isActive,
-        })));
-        setSuccess("Saison et semaines créées avec succès");
+        await saveSeason(seasonData, undefined, weeks);
+        setSuccess("Saison créée avec succès");
       }
-      await loadData();
+
       handleCloseDialog();
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue lors de l'enregistrement");
-      console.error("Erreur lors de l'enregistrement:", err);
+      loadData();
+    } catch (err) {
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -363,12 +340,12 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
     try {
       setLoading(true);
-      setError(null);
       await deleteSeason(seasonToDelete.id);
-      await loadData();
+      handleSuccess("Saison supprimée avec succès");
       handleCloseDeleteDialog();
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue lors de la suppression");
+      loadData();
+    } catch (err) {
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -424,9 +401,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           </Button>
         </Box>
 
-        {error || seasonsError && (
+        {seasonsError && (
           <Alert severity="error" sx={{ mb: 2, [theme.breakpoints.up('sm')]: { mb: 3 } }}>
-            {error || seasonsError}
+            {seasonsError}
           </Alert>
         )}
 

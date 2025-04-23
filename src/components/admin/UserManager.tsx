@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
 import { supabaseServer } from "@lib/supabase";
 import { User, UserRole } from "../../types";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
   Paper,
@@ -50,6 +51,7 @@ interface UserManagerProps {
 
 export function UserManager({ isTabActive }: UserManagerProps) {
   const isAdmin = useHasRole("ADMIN");
+  const { handleError, handleSuccess } = useErrorHandler();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,37 +61,31 @@ export function UserManager({ isTabActive }: UserManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>("USER");
+  const [updating, setUpdating] = useState(false);
 
   const fetchUsers = useCallback(async () => {
-    console.log("fetchUsers: start");
     try {
-      console.log("fetchUsers: before supabase call");
       const { data, error } = await supabaseServer
         .from("users")
         .select("*")
         .order("created_at", { ascending: false });
 
-      console.log("fetchUsers: after supabase call", { data, error });
-      if (error) {
-        console.error("fetchUsers: supabase error", error);
-        throw error;
-      }
-      console.log("fetchUsers: setting data", data);
+      if (error) throw error;
       setUsers(data || []);
-      return data;
     } catch (err) {
-      console.error("fetchUsers: catch error", err);
-      setError("Erreur lors du chargement des utilisateurs");
+      handleError("Erreur lors du chargement des utilisateurs");
       throw err;
     }
-  }, []);
+  }, [handleError]);
+
+  const handleAdminError = useCallback(() => {
+    handleError("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
+    setLoading(false);
+  }, [handleError]);
 
   useEffect(() => {
     if (!isAdmin) {
-      setError(
-        "Vous n'avez pas les permissions nécessaires pour accéder à cette page"
-      );
-      setLoading(false);
+      handleAdminError();
       return;
     }
 
@@ -110,7 +106,7 @@ export function UserManager({ isTabActive }: UserManagerProps) {
     };
 
     loadData();
-  }, [isAdmin, fetchUsers, isTabActive]);
+  }, [isAdmin, fetchUsers, isTabActive, handleAdminError]);
 
   const handleOpenDialog = (user: User) => {
     setSelectedUser(user);
@@ -127,6 +123,7 @@ export function UserManager({ isTabActive }: UserManagerProps) {
     if (!selectedUser) return;
 
     try {
+      setUpdating(true);
       const { error } = await supabaseServer
         .from("users")
         .update({ role: selectedRole })
@@ -141,10 +138,13 @@ export function UserManager({ isTabActive }: UserManagerProps) {
         )
       );
 
+      handleSuccess("Rôle mis à jour avec succès");
       handleCloseDialog();
     } catch (err) {
-      setError("Erreur lors de la mise à jour du rôle");
+      handleError("Erreur lors de la mise à jour du rôle");
       console.error(err);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -253,7 +253,7 @@ export function UserManager({ isTabActive }: UserManagerProps) {
         <DialogTitle>Modifier le rôle</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Modifiez le rôle de {selectedUser?.name}
+            Modifier le rôle de {selectedUser?.name}
           </DialogContentText>
           <Select
             fullWidth
@@ -261,18 +261,20 @@ export function UserManager({ isTabActive }: UserManagerProps) {
             onChange={(e) => setSelectedRole(e.target.value as UserRole)}
             sx={{ mt: 2 }}
           >
-            <MenuItem value="USER">USER</MenuItem>
-            <MenuItem value="ADMIN">ADMIN</MenuItem>
+            <MenuItem value="USER">Utilisateur</MenuItem>
+            <MenuItem value="ADMIN">Administrateur</MenuItem>
           </Select>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Annuler</Button>
+          <Button onClick={handleCloseDialog} disabled={updating}>
+            Annuler
+          </Button>
           <Button
             onClick={handleRoleChange}
             variant="contained"
-            color="primary"
+            disabled={updating}
           >
-            Enregistrer
+            {updating ? <CircularProgress size={24} /> : "Enregistrer"}
           </Button>
         </DialogActions>
       </Dialog>

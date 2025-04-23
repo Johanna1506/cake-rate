@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
 import { supabaseServer } from "@lib/supabase";
 import { Week, User, Season } from "../../types";
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
   Typography,
@@ -53,13 +54,21 @@ interface WeekManagerProps {
   isTabActive: boolean;
 }
 
+interface WeekFormErrors {
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  userId?: string;
+  seasonId?: string;
+}
+
 export function WeekManager({ isTabActive }: WeekManagerProps) {
   const isAdmin = useHasRole("ADMIN");
+  const { handleError, handleSuccess } = useErrorHandler();
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<WeekFormErrors>({});
 
   // État pour le formulaire d'édition
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -94,11 +103,10 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       if (error) throw error;
       setWeeks(data || []);
     } catch (err) {
-      console.error("Erreur lors du chargement des semaines:", err);
-      setError("Erreur lors du chargement des semaines");
+      handleError(err);
       throw err;
     }
-  }, []);
+  }, [handleError]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -110,10 +118,10 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       if (error) throw error;
       setUsers(data || []);
     } catch (err) {
-      console.error("Erreur lors du chargement des utilisateurs:", err);
+      handleError(err);
       throw err;
     }
-  }, []);
+  }, [handleError]);
 
   const fetchSeasons = useCallback(async () => {
     try {
@@ -125,10 +133,10 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       if (error) throw error;
       setSeasons(data || []);
     } catch (err) {
-      console.error("Erreur lors du chargement des saisons:", err);
+      handleError(err);
       throw err;
     }
-  }, []);
+  }, [handleError]);
 
   const loadData = useCallback(async () => {
     if (!isAdmin || !isTabActive) {
@@ -137,19 +145,16 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       await Promise.all([fetchWeeks(), fetchUsers(), fetchSeasons()]);
     } catch (err) {
-      console.error("Erreur lors du chargement des données:", err);
-      setError("Erreur lors du chargement des données");
+      handleError(err);
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, fetchWeeks, fetchUsers, fetchSeasons, isTabActive]);
+  }, [isAdmin, fetchWeeks, fetchUsers, fetchSeasons, isTabActive, handleError]);
 
-  // Charger les données au montage du composant
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -168,6 +173,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    setFormErrors({});
   };
 
   const handleOpenDeleteDialog = (week: Week) => {
@@ -181,23 +187,47 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
   };
 
   const validateForm = () => {
-    if (!startDate || !endDate) {
-      setError("Les dates de début et de fin sont obligatoires");
-      return false;
+    const errors: WeekFormErrors = {};
+    let isValid = true;
+
+    if (!description.trim()) {
+      errors.description = "La description est requise";
+      isValid = false;
     }
-    if (startDate > endDate) {
-      setError("La date de début doit être antérieure à la date de fin");
-      return false;
+
+    if (!startDate) {
+      errors.startDate = "La date de début est requise";
+      isValid = false;
     }
-    return true;
+
+    if (!endDate) {
+      errors.endDate = "La date de fin est requise";
+      isValid = false;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      errors.endDate = "La date de fin doit être postérieure à la date de début";
+      isValid = false;
+    }
+
+    if (isActive && !selectedUserId) {
+      errors.userId = "Un participant doit être sélectionné pour une semaine active";
+      isValid = false;
+    }
+
+    if (!selectedSeasonId) {
+      errors.seasonId = "Une saison doit être sélectionnée";
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
   };
 
   const handleSaveWeek = async () => {
     if (!validateForm()) return;
 
     try {
-      setError(null);
-      setSuccess(null);
       setLoading(true);
 
       const weekData = {
@@ -217,20 +247,20 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
           .eq("id", currentWeek.id);
 
         if (error) throw error;
+        handleSuccess("Semaine mise à jour avec succès");
       } else {
         const { error } = await supabaseServer
           .from("weeks")
           .insert(weekData);
 
         if (error) throw error;
+        handleSuccess("Semaine créée avec succès");
       }
 
-      setSuccess("Semaine mise à jour avec succès");
       handleCloseDialog();
       await fetchWeeks();
-    } catch (err: any) {
-      console.error("Erreur lors de l'enregistrement de la semaine:", err);
-      setError(err.message || "Erreur lors de l'enregistrement de la semaine");
+    } catch (err) {
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -240,8 +270,6 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
     if (!weekToDelete) return;
 
     try {
-      setError(null);
-      setSuccess(null);
       setLoading(true);
 
       const { error } = await supabaseServer
@@ -250,13 +278,11 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
         .eq("id", weekToDelete.id);
 
       if (error) throw error;
-
-      setSuccess("Semaine supprimée avec succès");
+      handleSuccess("Semaine supprimée avec succès");
       handleCloseDeleteDialog();
-      fetchWeeks();
+      await fetchWeeks();
     } catch (err) {
-      console.error("Erreur lors de la suppression de la semaine:", err);
-      setError("Erreur lors de la suppression de la semaine");
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -290,15 +316,33 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
           </Typography>
         </Box>
 
-        {error && (
+        {formErrors.description && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+            {formErrors.description}
           </Alert>
         )}
 
-        {success && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            {success}
+        {formErrors.startDate && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {formErrors.startDate}
+          </Alert>
+        )}
+
+        {formErrors.endDate && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {formErrors.endDate}
+          </Alert>
+        )}
+
+        {formErrors.userId && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {formErrors.userId}
+          </Alert>
+        )}
+
+        {formErrors.seasonId && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {formErrors.seasonId}
           </Alert>
         )}
 
