@@ -1,4 +1,4 @@
-import { Typography, Box } from '@mui/material';
+import { Typography } from '@mui/material';
 
 interface FormErrorProps {
     error?: string;
@@ -22,4 +22,4 @@ export const FormError = ({ error, touched }: FormErrorProps) => {
             {error}
         </Typography>
     );
-}; 
+};
