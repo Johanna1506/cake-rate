@@ -20,7 +20,7 @@ export const useUserDetails = (userId?: string) => {
         queryKey: ['user', userId],
         queryFn: async () => {
             if (!userId) return null;
-            
+
             const { data, error } = await auth.supabase
                 .from('users')
                 .select('*')
@@ -47,7 +47,7 @@ export function useSignIn() {
         onSuccess: async (data) => {
             // Mettre à jour la session
             queryClient.setQueryData(['session'], data);
-            
+
             // Vérifier si l'utilisateur existe dans la table users
             if (data.session?.user?.id) {
                 const { data: userData, error: userError } = await auth.supabase
@@ -118,11 +118,11 @@ export function useSignUp() {
         onSuccess: async (data) => {
             if (data.session) {
                 queryClient.setQueryData(['session'], data);
-                
+
                 if (data.session.user?.id) {
                     // Attendre un court instant pour laisser le trigger créer l'utilisateur
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    
+
                     const { data: userData, error: userError } = await auth.supabase
                         .from('users')
                         .select('*')
@@ -202,4 +202,16 @@ export const useUpdateProfile = () => {
             queryClient.invalidateQueries({ queryKey: ['user', data.id] });
         },
     });
-}; 
+};
+
+// Hook pour mettre à jour le mot de passe
+export function useUpdatePassword() {
+    return useMutation({
+        mutationFn: async ({ currentPassword: _currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
+            const { error } = await auth.supabase.auth.updateUser({
+                password: newPassword
+            });
+            if (error) throw error;
+        },
+    });
+}

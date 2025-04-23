@@ -11,7 +11,6 @@ import {
     Paper,
     CircularProgress,
     Stack,
-    Link as MuiLink,
     InputAdornment,
     IconButton,
 } from '@mui/material';
@@ -174,18 +173,25 @@ export function Login() {
                                 'Se connecter'
                             )}
                         </StyledButton>
-                        <Stack direction="row" spacing={2} justifyContent="center">
-                            <MuiLink
-                                component="button"
-                                variant="body2"
+                        <Stack direction="column" justifyContent="center">
+                            <Button
+                                fullWidth
+                                variant="text"
                                 onClick={() => navigate('/signup')}
                             >
                                 Créer un compte
-                            </MuiLink>
+                            </Button>
+                            <Button
+                                fullWidth
+                                variant="text"
+                                onClick={() => navigate('/forgot-password')}
+                            >
+                                Mot de passe oublié ?
+                            </Button>
                         </Stack>
                     </StyledForm>
                 </StyledPaper>
             </Box>
         </Container>
     );
-} 
+}

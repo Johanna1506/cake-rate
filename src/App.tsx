@@ -15,6 +15,8 @@ import { ToastProvider } from "@components/Toast";
 // Lazy load all pages
 const Login = lazy(() => import("@pages/Login").then(module => ({ default: module.Login })));
 const SignUp = lazy(() => import("@pages/SignUp").then(module => ({ default: module.SignUp })));
+const ForgotPassword = lazy(() => import("@pages/ForgotPassword").then(module => ({ default: module.ForgotPassword })));
+const ResetPassword = lazy(() => import("@pages/ResetPassword").then(module => ({ default: module.ResetPassword })));
 const Home = lazy(() => import("@pages/Home").then(module => ({ default: module.Home })));
 const Admin = lazy(() => import("@pages/Admin").then(module => ({ default: module.Admin })));
 const Profile = lazy(() => import("@pages/Profile").then(module => ({ default: module.Profile })));
@@ -112,6 +114,22 @@ function AppContent() {
             element={
               <PublicRoute>
                 <SignUp />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicRoute>
+                <ResetPassword />
               </PublicRoute>
             }
           />

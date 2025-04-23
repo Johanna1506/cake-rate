@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useUserDetails, useUpdateUser, useSession } from '@hooks/useAuthQuery';
+import { useUserDetails, useUpdateUser, useSession, useUpdatePassword } from '@hooks/useAuthQuery';
 import { uploadAvatar } from '@services/storage';
 import { useErrorHandler } from '@hooks/useErrorHandler';
 import {
@@ -73,9 +73,11 @@ export function Profile() {
     const userId = session?.session?.user?.id;
     const { data: userDetails, isLoading, error } = useUserDetails(userId || '');
     const updateUser = useUpdateUser();
+    const updatePassword = useUpdatePassword();
     const { handleError, handleSuccess } = useErrorHandler();
 
     const [isEditing, setIsEditing] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [name, setName] = useState('');
     const [nameError, setNameError] = useState('');
     const [nameTouched, setNameTouched] = useState(false);
@@ -83,6 +85,10 @@ export function Profile() {
     const [avatar, setAvatar] = useState<File | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         if (userDetails) {
@@ -158,6 +164,38 @@ export function Profile() {
         }
     };
 
+    const handlePasswordSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setPasswordError('');
+
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Les mots de passe ne correspondent pas');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setPasswordError('Le mot de passe doit contenir au moins 6 caractères');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await updatePassword.mutateAsync({
+                currentPassword,
+                newPassword
+            });
+            handleSuccess('Mot de passe mis à jour avec succès');
+            setIsChangingPassword(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err) {
+            handleError(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getInitials = () => {
         if (userDetails?.name) {
             return userDetails.name.charAt(0).toUpperCase();
@@ -194,7 +232,7 @@ export function Profile() {
 
             <StyledCard elevation={3}>
                 <StyledCardContent>
-                    {!isEditing ? (
+                    {!isEditing && !isChangingPassword ? (
                         <>
                             <AvatarContainer>
                                 <StyledAvatar
@@ -234,16 +272,85 @@ export function Profile() {
                                 </InfoRow>
                             </InfoContainer>
 
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={() => setIsEditing(true)}
-                                sx={{ mt: 3 }}
-                                fullWidth
-                            >
-                                Modifier
-                            </Button>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => setIsEditing(true)}
+                                    fullWidth
+                                >
+                                    Modifier le profil
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => setIsChangingPassword(true)}
+                                    fullWidth
+                                >
+                                    Changer le mot de passe
+                                </Button>
+                            </Box>
                         </>
+                    ) : isChangingPassword ? (
+                        <Form onSubmit={handlePasswordSubmit}>
+                            <Typography variant="h6" gutterBottom>
+                                Changer le mot de passe
+                            </Typography>
+
+                            <TextField
+                                label="Mot de passe actuel"
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                fullWidth
+                                variant="outlined"
+                                required
+                                sx={{ mb: 2 }}
+                            />
+
+                            <TextField
+                                label="Nouveau mot de passe"
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                fullWidth
+                                variant="outlined"
+                                required
+                                sx={{ mb: 2 }}
+                            />
+
+                            <TextField
+                                label="Confirmer le nouveau mot de passe"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                fullWidth
+                                variant="outlined"
+                                required
+                                error={!!passwordError}
+                                helperText={passwordError}
+                                sx={{ mb: 3 }}
+                            />
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setIsChangingPassword(false)}
+                                    fullWidth
+                                    disabled={loading}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    fullWidth
+                                    disabled={loading}
+                                >
+                                    {loading ? <CircularProgress size={24} /> : 'Enregistrer'}
+                                </Button>
+                            </Box>
+                        </Form>
                     ) : (
                         <Form onSubmit={handleSubmit}>
                             <AvatarContainer>
@@ -316,4 +423,4 @@ export function Profile() {
             </StyledCard>
         </StyledContainer>
     );
-} 
+}

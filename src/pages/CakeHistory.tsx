@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Button, Alert, Collapse } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
@@ -214,6 +214,18 @@ export function CakeHistory() {
       }
     },
   });
+
+  // Initialiser l'état des saisons quand les données sont chargées
+  useEffect(() => {
+    if (cakes) {
+      const initialSeasons = cakes.reduce((acc, cake) => {
+        const seasonName = cake.week.season?.theme || 'Sans saison';
+        acc[seasonName] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
+      setOpenSeasons(initialSeasons);
+    }
+  }, [cakes]);
 
   if (error) {
     return (

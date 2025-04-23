@@ -14,6 +14,8 @@ import {
   CardMedia,
   Chip,
   Avatar,
+  Paper,
+  Fade,
 } from "@mui/material";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -56,15 +58,298 @@ function CustomRating({ value, onChange, max, label, error, helperText }: Custom
         precision={0.5}
       />
       {value !== null && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           Note : {value.toFixed(1)}/{max}
         </Typography>
       )}
       {error && helperText && (
-        <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+        <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
           {helperText}
         </Typography>
       )}
+    </Box>
+  );
+}
+
+function CakeHeader({ cake, userRating }: { cake: any; userRating: boolean }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography
+        variant="h5"
+        gutterBottom
+        align="center"
+        sx={{
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+          mb: 2,
+          fontWeight: 600,
+          color: 'primary.main'
+        }}
+      >
+        {userRating ? "Modifier votre note" : "Noter le gâteau"}
+      </Typography>
+
+      <CardMedia
+        component="img"
+        image={cake.image_url}
+        alt={cake.description}
+        sx={{
+          objectFit: "cover",
+          borderRadius: 2,
+          height: { xs: '200px', sm: '300px' },
+          transition: 'transform 0.3s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.02)'
+          }
+        }}
+      />
+    </Box>
+  );
+}
+
+function CakeInfo({ cake }: { cake: any }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Box sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        flexDirection: { xs: 'column', sm: 'row' },
+        textAlign: { xs: 'center', sm: 'left' },
+        mb: 1.5
+      }}>
+        <Avatar
+          src={cake.user?.avatar_url}
+          alt={cake.user?.name}
+          sx={{
+            width: 40,
+            height: 40,
+            border: '2px solid',
+            borderColor: 'primary.main'
+          }}
+        />
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: { xs: '1rem', sm: '1.1rem' },
+            fontWeight: 500
+          }}
+        >
+          Gâteau réalisé par {cake.user?.name}
+        </Typography>
+      </Box>
+
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          fontSize: { xs: '1.1rem', sm: '1.2rem' },
+          fontWeight: 600,
+          color: 'text.primary',
+          mb: 1
+        }}
+      >
+        {cake.name}
+      </Typography>
+
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{
+          lineHeight: 1.5,
+          mb: 1.5
+        }}
+      >
+        {cake.description}
+      </Typography>
+
+      <Box>
+        <Chip
+          label={cake.week?.season?.theme}
+          color="primary"
+          sx={{
+            fontWeight: 600,
+            backgroundColor: 'primary.main',
+            color: 'white',
+            '& .MuiChip-label': {
+              px: 2,
+              py: 0.5,
+            },
+            alignSelf: { xs: 'center', sm: 'flex-start' },
+            boxShadow: 1,
+            '&:hover': {
+              backgroundColor: 'primary.dark',
+            }
+          }}
+        />
+        {cake.week && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mt: 1,
+              textAlign: { xs: 'center', sm: 'left' },
+              fontStyle: 'italic'
+            }}
+          >
+            {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
+              locale: fr,
+            })}
+            {" - "}
+            {format(new Date(cake.week.end_date), "dd MMMM yyyy", {
+              locale: fr,
+            })}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+function RatingForm({
+  appearance,
+  setAppearance,
+  taste,
+  setTaste,
+  themeAdherence,
+  setThemeAdherence,
+  comment,
+  setComment,
+  commentError,
+  setCommentError,
+  commentTouched,
+  setCommentTouched,
+  totalScore,
+  loading,
+  handleSubmit,
+  appearanceError,
+  tasteError,
+  themeAdherenceError
+}: {
+  appearance: number | null;
+  setAppearance: (value: number | null) => void;
+  taste: number | null;
+  setTaste: (value: number | null) => void;
+  themeAdherence: number | null;
+  setThemeAdherence: (value: number | null) => void;
+  comment: string;
+  setComment: (value: string) => void;
+  commentError: string;
+  setCommentError: (value: string) => void;
+  commentTouched: boolean;
+  setCommentTouched: (value: boolean) => void;
+  totalScore: number | null;
+  loading: boolean;
+  handleSubmit: (event: React.FormEvent) => void;
+  appearanceError: string;
+  tasteError: string;
+  themeAdherenceError: string;
+}) {
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2
+      }}
+    >
+      <Stack spacing={2}>
+        <CustomRating
+          value={appearance}
+          onChange={setAppearance}
+          max={2.5}
+          label="Apparence"
+          error={!!appearanceError}
+          helperText={appearanceError}
+        />
+        <CustomRating
+          value={taste}
+          onChange={setTaste}
+          max={5}
+          label="Goût"
+          error={!!tasteError}
+          helperText={tasteError}
+        />
+        <CustomRating
+          value={themeAdherence}
+          onChange={setThemeAdherence}
+          max={2.5}
+          label="Respect du thème"
+          error={!!themeAdherenceError}
+          helperText={themeAdherenceError}
+        />
+      </Stack>
+
+      <TextField
+        fullWidth
+        multiline
+        rows={4}
+        label="Commentaire"
+        value={comment}
+        onChange={(e) => {
+          setComment(e.target.value);
+          if (commentTouched) {
+            if (!e.target.value.trim()) {
+              setCommentError("Veuillez ajouter un commentaire");
+            } else if (e.target.value.length < 10) {
+              setCommentError("Le commentaire doit contenir au moins 10 caractères");
+            } else {
+              setCommentError("");
+            }
+          }
+        }}
+        onBlur={() => setCommentTouched(true)}
+        error={!!commentError}
+        helperText={commentError}
+        sx={{
+          '& .MuiInputBase-root': {
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              backgroundColor: 'action.hover'
+            }
+          },
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2
+          }
+        }}
+      />
+
+      {totalScore !== null && (
+        <Typography
+          variant="h6"
+          align="center"
+          sx={{
+            color: 'primary.main',
+            fontWeight: 600,
+            fontSize: { xs: '1rem', sm: '1.1rem' }
+          }}
+        >
+          Note totale : {totalScore.toFixed(1)}/10
+        </Typography>
+      )}
+
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={loading}
+        sx={{
+          py: 1.5,
+          fontSize: { xs: '0.875rem', sm: '1rem' },
+          fontWeight: 600,
+          borderRadius: 2,
+          textTransform: 'none',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: 3
+          }
+        }}
+      >
+        {loading ? <CircularProgress size={24} /> : "Enregistrer la note"}
+      </Button>
     </Box>
   );
 }
@@ -84,7 +369,6 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
   const [commentTouched, setCommentTouched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Validation states
   const [appearanceError, setAppearanceError] = useState("");
   const [tasteError, setTasteError] = useState("");
   const [themeAdherenceError, setThemeAdherenceError] = useState("");
@@ -139,10 +423,7 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
       setThemeAdherenceError("");
     }
 
-    if (!comment.trim()) {
-      setCommentError("Veuillez ajouter un commentaire");
-      isValid = false;
-    } else if (comment.length < 10) {
+    if (comment.trim() && comment.length < 10) {
       setCommentError("Le commentaire doit contenir au moins 10 caractères");
       isValid = false;
     } else {
@@ -183,179 +464,46 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
 
   if (!cake) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
         <CircularProgress />
       </Box>
     );
   }
 
+  const userRating = ratings?.some((r) => r.user_id === session?.session?.user?.id) ?? false;
+
   return (
-    <Box sx={{
-      p: { xs: 1, sm: 2 },
-      maxWidth: '100%',
-      overflow: 'hidden'
-    }}>
-      <Typography variant="h5" gutterBottom align="center" sx={{
-        fontSize: { xs: '1.25rem', sm: '1.5rem' },
-        mb: 1
+    <Fade in={true} timeout={500}>
+      <Paper elevation={0} sx={{
+        p: { xs: 2, sm: 3 },
+        maxWidth: '100%',
+        overflow: 'hidden',
+        borderRadius: 2,
+        bgcolor: 'background.paper',
       }}>
-        {ratings?.some((r) => r.user_id === session?.session?.user?.id)
-          ? "Modifier votre note"
-          : "Noter le gâteau"}
-      </Typography>
-
-      <Box sx={{
-        mb: { xs: 2, sm: 4 },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: { xs: 2, sm: 3 }
-      }}>
-        <CardMedia
-          component="img"
-          height="300"
-          image={cake.image_url}
-          alt={cake.description}
-          sx={{
-            objectFit: "cover",
-            borderRadius: 1,
-            mb: 2,
-            height: { xs: '200px', sm: '300px' }
-          }}
+        <CakeHeader cake={cake} userRating={userRating} />
+        <CakeInfo cake={cake} />
+        <RatingForm
+          appearance={appearance}
+          setAppearance={setAppearance}
+          taste={taste}
+          setTaste={setTaste}
+          themeAdherence={themeAdherence}
+          setThemeAdherence={setThemeAdherence}
+          comment={comment}
+          setComment={setComment}
+          commentError={commentError}
+          setCommentError={setCommentError}
+          commentTouched={commentTouched}
+          setCommentTouched={setCommentTouched}
+          totalScore={totalScore}
+          loading={loading}
+          handleSubmit={handleSubmit}
+          appearanceError={appearanceError}
+          tasteError={tasteError}
+          themeAdherenceError={themeAdherenceError}
         />
-        <Box sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          mb: 2,
-          flexDirection: { xs: 'column', sm: 'row' },
-          textAlign: { xs: 'center', sm: 'left' }
-        }}>
-          <Avatar
-            src={cake.user?.avatar_url}
-            alt={cake.user?.name}
-            sx={{ width: 40, height: 40 }}
-          />
-          <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-            Gâteau réalisé par {cake.user?.name}
-          </Typography>
-        </Box>
-        <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-          {cake.name}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          {cake.description}
-        </Typography>
-        <Chip
-          label={cake.week?.season?.theme}
-          color="primary"
-          sx={{
-            mt: 1,
-            fontWeight: "bold",
-            backgroundColor: "primary.main",
-            color: "white",
-            "& .MuiChip-label": {
-              px: 2,
-            },
-            alignSelf: { xs: 'center', sm: 'flex-start' }
-          }}
-        />
-        {cake.week && (
-          <Typography variant="body2" color="text.secondary" sx={{
-            mt: 1,
-            textAlign: { xs: 'center', sm: 'left' }
-          }}>
-            {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
-              locale: fr,
-            })}
-            {" - "}
-            {format(new Date(cake.week.end_date), "dd MMMM yyyy", {
-              locale: fr,
-            })}
-          </Typography>
-        )}
-      </Box>
-
-      <Box component="form" onSubmit={handleSubmit} sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: { xs: 2, sm: 3 }
-      }}>
-        <Stack spacing={3}>
-          <CustomRating
-            value={appearance}
-            onChange={setAppearance}
-            max={2.5}
-            label="Apparence"
-            error={!!appearanceError}
-            helperText={appearanceError}
-          />
-          <CustomRating
-            value={taste}
-            onChange={setTaste}
-            max={5}
-            label="Goût"
-            error={!!tasteError}
-            helperText={tasteError}
-          />
-          <CustomRating
-            value={themeAdherence}
-            onChange={setThemeAdherence}
-            max={2.5}
-            label="Respect du thème"
-            error={!!themeAdherenceError}
-            helperText={themeAdherenceError}
-          />
-        </Stack>
-
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          label="Commentaire"
-          value={comment}
-          onChange={(e) => {
-            setComment(e.target.value);
-            if (commentTouched) {
-              if (!e.target.value.trim()) {
-                setCommentError("Veuillez ajouter un commentaire");
-              } else if (e.target.value.length < 10) {
-                setCommentError("Le commentaire doit contenir au moins 10 caractères");
-              } else {
-                setCommentError("");
-              }
-            }
-          }}
-          onBlur={() => setCommentTouched(true)}
-          error={!!commentError}
-          helperText={commentError}
-          sx={{
-            mt: 2,
-            '& .MuiInputBase-root': {
-              fontSize: { xs: '0.875rem', sm: '1rem' }
-            }
-          }}
-        />
-
-        {totalScore !== null && (
-          <Typography variant="h6" align="center" sx={{ mt: 2 }}>
-            Note totale : {totalScore.toFixed(1)}/10
-          </Typography>
-        )}
-
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={loading}
-          sx={{
-            mt: 2,
-            py: { xs: 1, sm: 1.5 },
-            fontSize: { xs: '0.875rem', sm: '1rem' }
-          }}
-        >
-          {loading ? <CircularProgress size={24} /> : "Enregistrer la note"}
-        </Button>
-      </Box>
-    </Box>
+      </Paper>
+    </Fade>
   );
 }
