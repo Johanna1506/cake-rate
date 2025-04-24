@@ -74,13 +74,28 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'mui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'react-core': ['react', 'react-dom'],
+          'mui-core': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'react-router': ['react-router-dom'],
+          'react-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled', 'date-fns', '@tanstack/react-query'],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@mui/material',
+      '@mui/icons-material',
+      '@emotion/react',
+      '@emotion/styled',
+      '@tanstack/react-query',
+      '@tanstack/react-query-devtools'
+    ],
+    esbuildOptions: {
+      target: 'es2020',
+    },
   },
 })
