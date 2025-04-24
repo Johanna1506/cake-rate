@@ -103,7 +103,7 @@ function AppContent() {
   }
 
   return (
-    <>
+    <Box sx={{ pb: { xs: '80px', sm: 0 } }}>
       <Navigation />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
@@ -198,7 +198,7 @@ function AppContent() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </>
+    </Box>
   );
 }
 

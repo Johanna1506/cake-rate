@@ -1,4 +1,4 @@
-import { Box, Typography, Rating } from "@mui/material";
+import { Box, Typography, Rating, useTheme, useMediaQuery } from "@mui/material";
 import { Cake, Rating as RatingType } from "../types";
 
 interface CakeRatingsProps {
@@ -6,6 +6,9 @@ interface CakeRatingsProps {
 }
 
 export function CakeRatings({ cake }: CakeRatingsProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const calculateAverage = (ratings: RatingType[] | undefined) => {
     if (!ratings || ratings.length === 0) return { appearance: 0, taste: 0, theme_adherence: 0 };
     const sum = ratings.reduce((acc, rating) => ({
@@ -29,13 +32,58 @@ export function CakeRatings({ cake }: CakeRatingsProps) {
   const displayTaste = (averages.taste / 5) * 5;
   const displayThemeAdherence = (averages.theme_adherence / 2.5) * 5;
 
+  if (!cake.ratings || cake.ratings.length === 0) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        mt: 4,
+        p: { xs: 2, sm: 3 },
+        borderRadius: 3,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        transition: 'all 0.3s ease',
+        borderLeft: '4px solid',
+        borderColor: 'primary.main',
+        '&:hover': {
+          boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+          transform: 'translateY(-2px)'
+        }
+      }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: 2,
+            color: 'primary.main',
+            textAlign: 'left',
+            letterSpacing: '0.5px',
+            fontSize: { xs: '1.25rem', sm: '1.5rem' }
+          }}
+        >
+          Notes moyennes
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: 'text.secondary',
+            textAlign: 'center',
+            py: 2
+          }}
+        >
+          Aucune note pour le moment
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      gap: 2.5,
+      gap: 2,
       mt: 4,
-      p: 3,
+      p: { xs: 2, sm: 3 },
       borderRadius: 3,
       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
       transition: 'all 0.3s ease',
@@ -59,71 +107,102 @@ export function CakeRatings({ cake }: CakeRatingsProps) {
           mb: 2,
           color: 'primary.main',
           textAlign: 'left',
-          letterSpacing: '0.5px'
+          letterSpacing: '0.5px',
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }
         }}
       >
         Notes moyennes
       </Typography>
       <Box sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        p: 1.5,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        gap: { xs: 1, sm: 2 },
+        p: { xs: 1, sm: 1.5 },
         borderRadius: 2,
         '&:hover': {
           backgroundColor: 'action.hover'
         }
       }}>
-        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Apparence :</Typography>
-        <Rating value={displayAppearance} precision={0.5} readOnly size="medium" />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
-          ({averages.appearance.toFixed(1)}/2.5)
-        </Typography>
+        <Typography variant="body1" sx={{
+          minWidth: { xs: 'auto', sm: 120 },
+          fontWeight: 600,
+          mb: { xs: 0.5, sm: 0 }
+        }}>Apparence :</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Rating value={displayAppearance} precision={0.5} readOnly size={isMobile ? "small" : "medium"} />
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            ({averages.appearance.toFixed(1)}/2.5)
+          </Typography>
+        </Box>
       </Box>
       <Box sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        p: 1.5,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        gap: { xs: 1, sm: 2 },
+        p: { xs: 1, sm: 1.5 },
         borderRadius: 2,
         '&:hover': {
           backgroundColor: 'action.hover'
         }
       }}>
-        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Goût :</Typography>
-        <Rating value={displayTaste} precision={0.5} readOnly size="medium" />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
-          ({averages.taste.toFixed(1)}/5)
-        </Typography>
+        <Typography variant="body1" sx={{
+          minWidth: { xs: 'auto', sm: 120 },
+          fontWeight: 600,
+          mb: { xs: 0.5, sm: 0 }
+        }}>Goût :</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Rating value={displayTaste} precision={0.5} readOnly size={isMobile ? "small" : "medium"} />
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            ({averages.taste.toFixed(1)}/5)
+          </Typography>
+        </Box>
       </Box>
       <Box sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        p: 1.5,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        gap: { xs: 1, sm: 2 },
+        p: { xs: 1, sm: 1.5 },
         borderRadius: 2,
         '&:hover': {
           backgroundColor: 'action.hover'
         }
       }}>
-        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Thème :</Typography>
-        <Rating value={displayThemeAdherence} precision={0.5} readOnly size="medium" />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
-          ({averages.theme_adherence.toFixed(1)}/2.5)
-        </Typography>
+        <Typography variant="body1" sx={{
+          minWidth: { xs: 'auto', sm: 120 },
+          fontWeight: 600,
+          mb: { xs: 0.5, sm: 0 }
+        }}>Thème :</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Rating value={displayThemeAdherence} precision={0.5} readOnly size={isMobile ? "small" : "medium"} />
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            ({averages.theme_adherence.toFixed(1)}/2.5)
+          </Typography>
+        </Box>
       </Box>
       <Box sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        gap: { xs: 1, sm: 2 },
         mt: 2,
         pt: 2,
         borderTop: '2px solid',
         borderColor: 'divider',
-        p: 2,
+        p: { xs: 1, sm: 2 },
       }}>
-        <Typography variant="h6" sx={{ minWidth: 120, fontWeight: 700, color: 'primary.main' }}>Total :</Typography>
-        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+        <Typography variant="h6" sx={{
+          minWidth: { xs: 'auto', sm: 120 },
+          fontWeight: 700,
+          color: 'primary.main',
+          fontSize: { xs: '1.1rem', sm: '1.25rem' }
+        }}>Total :</Typography>
+        <Typography variant="h6" color="primary.main" sx={{
+          fontWeight: 700,
+          fontSize: { xs: '1.1rem', sm: '1.25rem' }
+        }}>
           {(averages.appearance + averages.taste + averages.theme_adherence).toFixed(1)}/10
         </Typography>
       </Box>

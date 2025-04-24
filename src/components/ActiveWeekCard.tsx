@@ -40,17 +40,30 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
           overflow: 'visible'
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           {/* En-tête de la carte */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-            <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'center', sm: 'flex-start' },
+            mb: 3,
+            gap: { xs: 2, sm: 0 }
+          }}>
+            <Box sx={{
+              display: 'flex',
+              gap: { xs: 2, sm: 3 },
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              textAlign: { xs: 'center', sm: 'left' }
+            }}>
               {week.user && (
                 <Avatar
                   src={week.user.avatar_url}
                   alt={week.user.name}
                   sx={{
-                    width: 64,
-                    height: 64,
+                    width: { xs: 48, sm: 64 },
+                    height: { xs: 48, sm: 64 },
                     border: '2px solid',
                     borderColor: 'primary.main',
                     boxShadow: 2
@@ -66,7 +79,8 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
                   sx={{
                     fontWeight: 600,
                     color: 'text.primary',
-                    mb: 1
+                    mb: 1,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
                   }}
                 >
                   {format(new Date(week.start_date), "dd MMMM", { locale: fr })} - {format(new Date(week.end_date), "dd MMMM yyyy", { locale: fr })}
@@ -79,7 +93,8 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
                       color: 'text.secondary',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 1
+                      gap: 1,
+                      justifyContent: { xs: 'center', sm: 'flex-start' }
                     }}
                   >
                     Participant : {week.user.name}
@@ -96,8 +111,13 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: { xs: 'center', sm: 'flex-end' },
+              gap: 2,
+              width: { xs: '100%', sm: 'auto' }
+            }}>
               {week.user?.id === currentUser?.id && !cake && (
                 <Button
                   variant="contained"
@@ -109,7 +129,8 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
                     textTransform: 'none',
                     fontWeight: 600,
                     px: 3,
-                    py: 1
+                    py: 1,
+                    width: { xs: '100%', sm: 'auto' }
                   }}
                 >
                   Ajouter votre gâteau
@@ -136,7 +157,10 @@ export function ActiveWeekCard({ week, currentUser, onAddCake }: ActiveWeekCardP
         maxWidth="md"
         fullWidth
       >
-        <DialogContent sx={{ position: 'relative' }}>
+        <DialogContent sx={{
+          position: 'relative',
+          p: { xs: 2, sm: 3 }
+        }}>
           <IconButton
             onClick={() => setShowRatingModal(false)}
             sx={{

@@ -120,6 +120,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
             // Rafraîchir les données
             await queryClient.invalidateQueries({ queryKey: ['cakes'] });
             await queryClient.invalidateQueries({ queryKey: ['weekCake'] });
+            await queryClient.invalidateQueries({ queryKey: ['currentSeason'] });
 
             handleSuccess('Le gâteau a été ajouté avec succès !');
             setFile(null);
@@ -310,7 +311,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                     display: 'flex',
                     gap: 2,
                     mt: 2,
-                    flexDirection: { xs: 'column', sm: 'row' }
+                    flexDirection: { xs: 'column-reverse', sm: 'row' }
                 }}>
                     {onClose && (
                         <Button
