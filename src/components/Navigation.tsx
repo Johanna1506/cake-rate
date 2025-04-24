@@ -189,30 +189,37 @@ const MobileBottomNav = styled(Paper)(({ theme }) => ({
   },
   '& .MuiBottomNavigation-root': {
     backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98),
+      ? alpha(theme.palette.background.paper, 0.8)
+      : alpha(theme.palette.background.paper, 0.9),
     backdropFilter: 'blur(10px)',
-    borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    borderRadius: '20px 20px 0 0',
-    margin: '0 8px',
-    width: 'calc(100% - 16px)',
-    height: '72px',
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    borderTopLeftRadius: '18px',
+    borderTopRightRadius: '18px',
+    height: '64px',
+    padding: '4px 0',
   },
   '& .MuiBottomNavigationAction-root': {
+    minWidth: 'auto',
+    padding: '6px 12px',
     color: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.text.primary, 0.7)
-      : alpha(theme.palette.text.primary, 0.6),
+      ? alpha(theme.palette.text.primary, 0.5)
+      : alpha(theme.palette.text.primary, 0.4),
+    transition: 'all 0.2s ease-in-out',
     '&.Mui-selected': {
-      color: theme.palette.primary.main,
+      color: theme.palette.mode === 'dark'
+        ? theme.palette.primary.light
+        : theme.palette.primary.main,
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.875rem',
+      fontSize: '0.7rem',
+      marginTop: '2px',
       '&.Mui-selected': {
-        fontSize: '0.875rem',
+        fontSize: '0.7rem',
+        fontWeight: 500,
       },
     },
     '& .MuiSvgIcon-root': {
-      fontSize: '28px',
+      fontSize: '24px',
     },
   },
 }));
@@ -385,7 +392,7 @@ export function Navigation() {
 
       <PageWrapper>
         {session?.session?.user && (
-          <MobileBottomNav elevation={3}>
+          <MobileBottomNav elevation={0}>
             <BottomNavigation
               value={value}
               onChange={handleChange}
