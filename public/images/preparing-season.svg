@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gâteau de base -->
+  <path d="M16 32C16 28 20 24 24 24C28 24 32 28 32 32C32 36 28 40 24 40C20 40 16 36 16 32Z" fill="#FFB6C1"/>
+
+  <!-- Décoration en cours -->
+  <path d="M24 20C26 20 28 22 28 24C28 26 26 28 24 28C22 28 20 26 20 24C20 22 22 20 24 20Z" fill="#FFB6C1"/>
+
+  <!-- Éléments de décoration -->
+  <circle cx="24" cy="32" r="2" fill="#FF69B4"/>
+  <circle cx="20" cy="28" r="2" fill="#FF69B4"/>
+  <circle cx="28" cy="28" r="2" fill="#FF69B4"/>
+
+  <!-- Étoiles de décoration -->
+  <path d="M12 16L14 20L18 20L15 23L17 27L12 25L7 27L9 23L6 20L10 20Z" fill="#FFD700"/>
+  <path d="M36 16L38 20L42 20L39 23L41 27L36 25L31 27L33 23L30 20L34 20Z" fill="#FFD700"/>
+</svg>

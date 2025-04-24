@@ -14,6 +14,11 @@ import {
     Avatar,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { ChangeEvent, FormEvent } from 'react';
+
+const AVATAR_MAX_SIZE_MB = 0.5;
+const AVATAR_MAX_SIZE_BYTES = AVATAR_MAX_SIZE_MB * 1024 * 1024;
+const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 const StyledContainer = styled(Container)(({ theme }) => ({
     minHeight: '100vh',
@@ -21,23 +26,23 @@ const StyledContainer = styled(Container)(({ theme }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     padding: theme.spacing(4),
-}));
+})) as typeof Container;
 
 const StyledCard = styled(Card)(({ theme }) => ({
     width: '100%',
     maxWidth: 500,
     marginTop: theme.spacing(4),
-}));
+})) as typeof Card;
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
     padding: theme.spacing(3),
-}));
+})) as typeof CardContent;
 
-const Form = styled('form')(({ theme }) => ({
+const StyledForm = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(3),
-}));
+})) as typeof Box;
 
 const AvatarContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -45,7 +50,7 @@ const AvatarContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     gap: theme.spacing(2),
     marginBottom: theme.spacing(2),
-}));
+})) as typeof Box;
 
 const StyledAvatar = styled(Avatar)({
     width: 120,
@@ -53,20 +58,20 @@ const StyledAvatar = styled(Avatar)({
     fontSize: '3rem',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     border: '4px solid white',
-});
+}) as typeof Avatar;
 
 const InfoContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),
     marginTop: theme.spacing(2),
-}));
+})) as typeof Box;
 
 const InfoRow = styled(Box)({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-});
+}) as typeof Box;
 
 export function Profile() {
     const { data: session } = useSession();
@@ -114,18 +119,18 @@ export function Profile() {
         return isValid;
     };
 
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            // Vérifier la taille du fichier (max 2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                handleError('L\'image ne doit pas dépasser 2MB');
+            // Vérifier la taille du fichier
+            if (file.size > AVATAR_MAX_SIZE_BYTES) {
+                handleError(`L'image ne doit pas dépasser ${AVATAR_MAX_SIZE_MB}MB`);
                 return;
             }
 
             // Vérifier le type de fichier
-            if (!file.type.startsWith('image/')) {
-                handleError('Le fichier doit être une image');
+            if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
+                handleError('Format d\'image non supporté. Utilisez JPG, PNG, GIF ou WEBP');
                 return;
             }
 
@@ -134,7 +139,7 @@ export function Profile() {
         }
     };
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (!validateForm()) {
@@ -164,7 +169,7 @@ export function Profile() {
         }
     };
 
-    const handlePasswordSubmit = async (event: React.FormEvent) => {
+    const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setPasswordError('');
 
@@ -292,7 +297,7 @@ export function Profile() {
                             </Box>
                         </>
                     ) : isChangingPassword ? (
-                        <Form onSubmit={handlePasswordSubmit}>
+                        <StyledForm component="form" onSubmit={handlePasswordSubmit}>
                             <Typography variant="h6" gutterBottom>
                                 Changer le mot de passe
                             </Typography>
@@ -301,7 +306,7 @@ export function Profile() {
                                 label="Mot de passe actuel"
                                 type="password"
                                 value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
                                 fullWidth
                                 variant="outlined"
                                 required
@@ -312,7 +317,7 @@ export function Profile() {
                                 label="Nouveau mot de passe"
                                 type="password"
                                 value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
                                 fullWidth
                                 variant="outlined"
                                 required
@@ -323,7 +328,7 @@ export function Profile() {
                                 label="Confirmer le nouveau mot de passe"
                                 type="password"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                                 fullWidth
                                 variant="outlined"
                                 required
@@ -350,9 +355,9 @@ export function Profile() {
                                     {loading ? <CircularProgress size={24} /> : 'Enregistrer'}
                                 </Button>
                             </Box>
-                        </Form>
+                        </StyledForm>
                     ) : (
-                        <Form onSubmit={handleSubmit}>
+                        <StyledForm component="form" onSubmit={handleSubmit}>
                             <AvatarContainer>
                                 <StyledAvatar
                                     src={avatarUrl || undefined}
@@ -360,24 +365,24 @@ export function Profile() {
                                 >
                                     {!avatarUrl && getInitials()}
                                 </StyledAvatar>
-                                <input
+                                <Box component="input"
                                     accept="image/*"
                                     type="file"
                                     id="avatar-upload"
-                                    hidden
+                                    sx={{ display: 'none' }}
                                     onChange={handleAvatarChange}
                                 />
-                                <label htmlFor="avatar-upload">
+                                <Box component="label" htmlFor="avatar-upload" sx={{ cursor: 'pointer' }}>
                                     <Button variant="outlined" component="span">
                                         Changer l'avatar
                                     </Button>
-                                </label>
+                                </Box>
                             </AvatarContainer>
 
                             <TextField
                                 label="Nom"
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                                 onBlur={() => setNameTouched(true)}
                                 error={!!nameError && nameTouched}
                                 helperText={nameTouched && nameError}
@@ -417,7 +422,7 @@ export function Profile() {
                                     {loading ? <CircularProgress size={24} /> : 'Enregistrer'}
                                 </Button>
                             </Box>
-                        </Form>
+                        </StyledForm>
                     )}
                 </StyledCardContent>
             </StyledCard>

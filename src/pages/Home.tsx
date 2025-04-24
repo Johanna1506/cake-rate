@@ -20,6 +20,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentSeason } from '../hooks/useWeekQuery';
 import { useSession, useUserDetails } from "@hooks/useAuthQuery";
 import { ActiveWeekCard } from "@components/ActiveWeekCard";
+import emptySeasonImage from '../../public/images/empty-season.svg';
+import preparingSeasonImage from '../../public/images/preparing-season.svg';
 
 export function Home() {
   const queryClient = useQueryClient();
@@ -42,7 +44,35 @@ export function Home() {
   if (!season) {
     return (
       <Container maxWidth="md">
-        <Alert severity="info" sx={{ mt: 4 }}>
+        <Alert
+          severity="info"
+          sx={{
+            mt: 4,
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+            p: 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            '& .MuiAlert-icon': {
+              display: 'none'
+            },
+            '& .MuiAlert-message': {
+              fontSize: '1.1rem',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }
+          }}
+        >
+          <img
+            src={emptySeasonImage}
+            alt="Aucune saison active"
+            style={{ width: '48px', height: '48px' }}
+          />
           Aucune saison n'est active pour le moment. Revenez plus tard pour participer à la prochaine saison !
         </Alert>
       </Container>
@@ -52,7 +82,35 @@ export function Home() {
   if (!season.weeks || season.weeks.length === 0) {
     return (
       <Container maxWidth="md">
-        <Alert severity="info" sx={{ mt: 4 }}>
+        <Alert
+          severity="info"
+          sx={{
+            mt: 4,
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+            p: 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            '& .MuiAlert-icon': {
+              display: 'none'
+            },
+            '& .MuiAlert-message': {
+              fontSize: '1.1rem',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }
+          }}
+        >
+          <img
+            src={preparingSeasonImage}
+            alt="Saison en préparation"
+            style={{ width: '48px', height: '48px' }}
+          />
           La saison "{season.theme}" est en cours de préparation. Les semaines seront bientôt disponibles.
         </Alert>
       </Container>

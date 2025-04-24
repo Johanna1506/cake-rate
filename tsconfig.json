@@ -42,7 +42,11 @@
       "@context/*": [
         "src/context/*"
       ]
-    }
+    },
+    "types": ["react", "react-dom"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "src"

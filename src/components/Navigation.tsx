@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@context/ThemeContext";
 import {
@@ -16,32 +17,27 @@ import {
   MenuItem,
   Avatar,
   Tooltip,
-  Drawer,
-  List,
   ListItemIcon,
   ListItemText,
   Divider,
-  ListItemButton,
-  Collapse,
   alpha,
+  BottomNavigation,
+  BottomNavigationAction,
+  Paper,
 } from "@mui/material";
 import {
   Home as HomeIcon,
   History as HistoryIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
-  Menu as MenuIcon,
   Login as LoginIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
-  ExpandLess,
-  ExpandMore,
 } from "@mui/icons-material";
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
 import logo from "../assets/logo.png";
-import React from "react";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor:
@@ -56,7 +52,10 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(0, 1),
   },
-}));
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
+})) as typeof AppBar;
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
@@ -69,7 +68,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(0, 1),
   },
-}));
+})) as typeof Toolbar;
 
 const LogoContainer = styled(Link)(() => ({
   display: "flex",
@@ -96,7 +95,7 @@ const NavLinks = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: theme.spacing(2),
-}));
+})) as typeof Box;
 
 const NavButton = styled(Button)<{ component?: React.ElementType; to?: string }>(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.white,
@@ -115,7 +114,7 @@ const NavButton = styled(Button)<{ component?: React.ElementType; to?: string }>
     padding: theme.spacing(0.5, 1),
     fontSize: '0.875rem',
   },
-}));
+})) as typeof Button;
 
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 36,
@@ -126,36 +125,14 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
     transform: 'scale(1.1)',
     borderColor: alpha(theme.palette.common.white, 0.4),
   },
-}));
-
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  '& .MuiDrawer-paper': {
-    width: '100%',
-    maxWidth: 280,
-    borderRadius: '20px 0 0 20px',
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98),
-    backdropFilter: 'blur(10px)',
-    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    [theme.breakpoints.down('sm')]: {
-      width: '100%',
-      maxWidth: '100%',
-      borderRadius: 0,
-    },
-  },
-}));
-
-const StyledDrawerWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledDrawer>>((props, ref) => (
-  <StyledDrawer {...props} ref={ref} />
-));
+})) as typeof Avatar;
 
 const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
   transition: 'all 0.2s ease-in-out',
   '&:hover': {
     backgroundColor: alpha(theme.palette.action.hover, 0.08),
   },
-}));
+})) as typeof MenuItem;
 
 const StyledTooltip = styled(Tooltip)(({ theme }) => ({
   '& .MuiTooltip-tooltip': {
@@ -167,24 +144,18 @@ const StyledTooltip = styled(Tooltip)(({ theme }) => ({
     padding: '4px 8px',
     borderRadius: '4px',
   },
-}));
+})) as typeof Tooltip;
 
 const StyledTooltipWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledTooltip>>((props, ref) => (
   <StyledTooltip {...props} ref={ref} />
-));
+)) as React.ForwardRefExoticComponent<React.ComponentProps<typeof StyledTooltip> & React.RefAttributes<HTMLDivElement>>;
 
-const MobileMenuButton = styled(IconButton)(({ theme }) => ({
-  display: "none",
-  [theme.breakpoints.down("md")]: {
-    display: "block",
-  },
-}));
 
 const DesktopNav = styled(NavLinks)(({ theme }) => ({
   [theme.breakpoints.down("md")]: {
     display: "none",
   },
-}));
+})) as typeof NavLinks;
 
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
@@ -200,11 +171,57 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
       ? '0 4px 20px rgba(0, 0, 0, 0.3)'
       : '0 4px 20px rgba(0, 0, 0, 0.15)',
   },
-}));
+})) as typeof Menu;
 
 const StyledMenuWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledMenu>>((props, ref) => (
   <StyledMenu {...props} ref={ref} />
-));
+)) as React.ForwardRefExoticComponent<React.ComponentProps<typeof StyledMenu> & React.RefAttributes<HTMLDivElement>>;
+
+const MobileBottomNav = styled(Paper)(({ theme }) => ({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  zIndex: theme.zIndex.appBar,
+  display: 'none',
+  [theme.breakpoints.down('md')]: {
+    display: 'block',
+  },
+  '& .MuiBottomNavigation-root': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.95)
+      : alpha(theme.palette.background.paper, 0.98),
+    backdropFilter: 'blur(10px)',
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    borderRadius: '20px 20px 0 0',
+    margin: '0 8px',
+    width: 'calc(100% - 16px)',
+    height: '72px',
+  },
+  '& .MuiBottomNavigationAction-root': {
+    color: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.text.primary, 0.7)
+      : alpha(theme.palette.text.primary, 0.6),
+    '&.Mui-selected': {
+      color: theme.palette.primary.main,
+    },
+    '& .MuiBottomNavigationAction-label': {
+      fontSize: '0.875rem',
+      '&.Mui-selected': {
+        fontSize: '0.875rem',
+      },
+    },
+    '& .MuiSvgIcon-root': {
+      fontSize: '28px',
+    },
+  },
+}));
+
+const PageWrapper = styled('div')(({ theme }) => ({
+  [theme.breakpoints.up('md')]: {
+    paddingBottom: 0,
+  },
+}));
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -215,21 +232,8 @@ export function Navigation() {
   );
   const isAdmin = useHasRole("ADMIN");
   const signOut = useSignOut();
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const [open, setOpen] = useState(false);
-
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMenuAnchor(event.currentTarget);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMenuAnchor(null);
-  };
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [value, setValue] = useState(0);
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setUserMenuAnchor(event.currentTarget);
@@ -243,10 +247,26 @@ export function Navigation() {
     try {
       await signOut.mutateAsync();
       handleUserMenuClose();
-      handleMobileMenuClose();
       navigate("/login");
     } catch (error) {
       console.error("Error signing out:", error);
+    }
+  };
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+    switch (newValue) {
+      case 0:
+        navigate('/');
+        break;
+      case 1:
+        navigate('/cake-history');
+        break;
+      case 2:
+        handleUserMenuOpen(event as React.MouseEvent<HTMLElement>);
+        break;
+      default:
+        break;
     }
   };
 
@@ -257,31 +277,12 @@ export function Navigation() {
       onClose={handleUserMenuClose}
       onClick={handleUserMenuClose}
       anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right',
+        vertical: 'top',
+        horizontal: 'center',
       }}
       transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-      PaperProps={{
-        elevation: 0,
-        sx: {
-          overflow: 'visible',
-          filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-          '&:before': {
-            content: '""',
-            display: 'block',
-            position: 'absolute',
-            top: 0,
-            right: 14,
-            width: 10,
-            height: 10,
-            bgcolor: 'background.paper',
-            transform: 'translateY(-50%) rotate(45deg)',
-            zIndex: 0,
-          },
-        },
+        vertical: 'bottom',
+        horizontal: 'center',
       }}
     >
       <StyledMenuItem onClick={() => navigate("/profile")}>
@@ -308,184 +309,119 @@ export function Navigation() {
     </StyledMenuWithRef>
   );
 
-  const renderMobileMenu = () => (
-    <StyledDrawerWithRef
-      anchor="right"
-      open={Boolean(mobileMenuAnchor)}
-      onClose={handleMobileMenuClose}
-    >
-      <List>
-        {session?.session?.user ? (
-          <>
-            <ListItemButton component={Link} to="/" onClick={handleMobileMenuClose}>
-              <ListItemIcon>
-                <HomeIcon />
-              </ListItemIcon>
-              <ListItemText primary="Accueil" />
-            </ListItemButton>
-            <ListItemButton
-              component={Link}
-              to="/cake-history"
-              onClick={handleMobileMenuClose}
-            >
-              <ListItemIcon>
-                <HistoryIcon />
-              </ListItemIcon>
-              <ListItemText primary="Historique" />
-            </ListItemButton>
-            <ListItemButton onClick={() => setOpen(!open)}>
-              <ListItemIcon>
-                <StyledAvatar
-                  src={userDetails?.avatar_url || undefined}
-                  alt={userDetails?.name || "Avatar"}
-                >
-                  {userDetails?.name?.[0] || "U"}
-                </StyledAvatar>
-              </ListItemIcon>
-              <ListItemText primary={userDetails?.name || "Profil"} />
-              {open ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-            <Collapse in={open} timeout="auto" unmountOnExit>
-              <StyledMenuItem
-                onClick={() => {
-                  handleMobileMenuClose();
-                  navigate("/profile");
-                }}
-                sx={{ pl: 5 }}
-              >
-                <ListItemIcon>
-                  <PersonIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>Profil</ListItemText>
-              </StyledMenuItem>
-              {isAdmin && (
-                <StyledMenuItem onClick={() => {
-                  handleMobileMenuClose();
-                  navigate("/admin");
-                }} sx={{ pl: 5 }}>
-                  <ListItemIcon>
-                    <AdminIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Administration</ListItemText>
-                </StyledMenuItem>
-              )}
-            </Collapse>
-            <Divider />
-            <ListItemButton onClick={handleSignOut}>
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Déconnexion" />
-            </ListItemButton>
-          </>
-        ) : (
-          <ListItemButton
-            component={Link}
-            to="/login"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <LoginIcon />
-            </ListItemIcon>
-            <ListItemText primary="Connexion" />
-          </ListItemButton>
-        )}
-        <ListItemButton onClick={toggleTheme}>
-          <ListItemIcon>
-            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-          </ListItemIcon>
-          <ListItemText
-            primary={mode === "dark" ? "Mode clair" : "Mode sombre"}
-          />
-        </ListItemButton>
-      </List>
-    </StyledDrawerWithRef>
-  );
-
   return (
-    <StyledAppBar position="static" role="banner">
-      <StyledToolbar>
-        <LogoContainer to="/" aria-label="Accueil">
-          <Logo src={logo} alt="Logo de l'application" />
-        </LogoContainer>
+    <>
+      <StyledAppBar position="static" role="banner">
+        <StyledToolbar>
+          <LogoContainer to="/" aria-label="Accueil">
+            <Logo src={logo} alt="Logo de l'application" />
+          </LogoContainer>
 
-        <DesktopNav role="navigation" aria-label="Navigation principale">
-          {session?.session?.user ? (
-            <>
-              <NavButton
-                component={Link}
-                to="/"
-                startIcon={<HomeIcon />}
-                aria-label="Accéder à la page d'accueil"
-              >
-                Accueil
-              </NavButton>
-              <NavButton
-                component={Link}
-                to="/cake-history"
-                startIcon={<HistoryIcon />}
-                aria-label="Accéder à l'historique des gâteaux"
-              >
-                Historique
-              </NavButton>
-              <StyledTooltipWithRef title="Profil">
-                <IconButton
-                  onClick={handleUserMenuOpen}
-                  color="inherit"
-                  size="large"
-                  aria-label="Ouvrir le menu utilisateur"
-                  aria-expanded={Boolean(userMenuAnchor)}
-                  aria-haspopup="true"
+          <DesktopNav role="navigation" aria-label="Navigation principale">
+            {session?.session?.user ? (
+              <>
+                <NavButton
+                  component={Link}
+                  to="/"
+                  startIcon={<HomeIcon />}
+                  aria-label="Accéder à la page d'accueil"
                 >
+                  Accueil
+                </NavButton>
+                <NavButton
+                  component={Link}
+                  to="/cake-history"
+                  startIcon={<HistoryIcon />}
+                  aria-label="Accéder à l'historique des gâteaux"
+                >
+                  Historique
+                </NavButton>
+                <StyledTooltipWithRef title="Profil">
+                  <IconButton
+                    onClick={handleUserMenuOpen}
+                    color="inherit"
+                    size="large"
+                    aria-label="Ouvrir le menu utilisateur"
+                    aria-expanded={Boolean(userMenuAnchor)}
+                    aria-haspopup="true"
+                  >
+                    <StyledAvatar
+                      src={userDetails?.avatar_url || undefined}
+                      alt={`Avatar de ${userDetails?.name || "utilisateur"}`}
+                    >
+                      {userDetails?.name?.[0] || "U"}
+                    </StyledAvatar>
+                  </IconButton>
+                </StyledTooltipWithRef>
+              </>
+            ) : (
+              <NavButton
+                component={Link}
+                to="/login"
+                startIcon={<LoginIcon />}
+                aria-label="Se connecter"
+              >
+                Connexion
+              </NavButton>
+            )}
+            <StyledTooltipWithRef title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+              <IconButton
+                color="inherit"
+                onClick={toggleTheme}
+                aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+                sx={{
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'rotate(15deg) scale(1.1)',
+                  },
+                }}
+              >
+                {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+              </IconButton>
+            </StyledTooltipWithRef>
+          </DesktopNav>
+        </StyledToolbar>
+      </StyledAppBar>
+
+      <PageWrapper>
+        {session?.session?.user && (
+          <MobileBottomNav elevation={3}>
+            <BottomNavigation
+              value={value}
+              onChange={handleChange}
+              showLabels
+            >
+              <BottomNavigationAction
+                label="Accueil"
+                icon={<HomeIcon />}
+              />
+              <BottomNavigationAction
+                label="Historique"
+                icon={<HistoryIcon />}
+              />
+              <BottomNavigationAction
+                label="Profil"
+                icon={
                   <StyledAvatar
                     src={userDetails?.avatar_url || undefined}
                     alt={`Avatar de ${userDetails?.name || "utilisateur"}`}
+                    sx={{ width: 24, height: 24 }}
                   >
                     {userDetails?.name?.[0] || "U"}
                   </StyledAvatar>
-                </IconButton>
-              </StyledTooltipWithRef>
-            </>
-          ) : (
-            <NavButton
-              component={Link}
-              to="/login"
-              startIcon={<LoginIcon />}
-              aria-label="Se connecter"
-            >
-              Connexion
-            </NavButton>
-          )}
-          <StyledTooltipWithRef title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
-            <IconButton
-              color="inherit"
-              onClick={toggleTheme}
-              aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
-              sx={{
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'rotate(15deg) scale(1.1)',
-                },
-              }}
-            >
-              {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-          </StyledTooltipWithRef>
-        </DesktopNav>
+                }
+              />
+              <BottomNavigationAction
+                label={mode === "dark" ? "Clair" : "Sombre"}
+                icon={mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+                onClick={toggleTheme}
+              />
+            </BottomNavigation>
+          </MobileBottomNav>
+        )}
+      </PageWrapper>
 
-        <MobileMenuButton
-          color="inherit"
-          aria-label="Ouvrir le menu mobile"
-          aria-expanded={Boolean(mobileMenuAnchor)}
-          aria-haspopup="true"
-          onClick={handleMobileMenuOpen}
-        >
-          <MenuIcon />
-        </MobileMenuButton>
-      </StyledToolbar>
-
-      {renderMobileMenu()}
       {renderUserMenu()}
-    </StyledAppBar>
+    </>
   );
 }
