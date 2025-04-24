@@ -210,7 +210,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: { xs: 2, sm: 3 }
-            }}>
+            }} role="form" aria-label="Formulaire d'ajout de gâteau">
                 <Box sx={{
                     mb: { xs: 2, sm: 3 },
                     display: 'flex',
@@ -222,6 +222,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                         id="cake-image"
                         type="file"
                         onChange={handleFileChange}
+                        aria-label="Sélectionner une photo de gâteau"
                     />
                     <label htmlFor="cake-image">
                         <Button
@@ -245,11 +246,11 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                         position: 'relative',
                         mx: 'auto',
                         width: '100%'
-                    }}>
+                    }} role="img" aria-label="Aperçu de la photo du gâteau">
                         <Box
                             component="img"
                             src={previewUrl}
-                            alt="Preview"
+                            alt="Aperçu de la photo du gâteau"
                             sx={{
                                 width: '100%',
                                 height: { xs: '200px', sm: '300px' },
@@ -259,6 +260,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                         />
                         <IconButton
                             onClick={handleRemoveFile}
+                            aria-label="Supprimer la photo"
                             sx={{
                                 position: 'absolute',
                                 top: 8,
@@ -316,6 +318,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                             onClick={onClose}
                             fullWidth
                             disabled={loading}
+                            aria-label="Annuler l'ajout du gâteau"
                             sx={{
                                 py: { xs: 1, sm: 1.5 },
                                 fontSize: { xs: '0.875rem', sm: '1rem' }
@@ -329,6 +332,7 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
                         variant="contained"
                         fullWidth
                         disabled={loading}
+                        aria-label={loading ? "Ajout du gâteau en cours..." : "Ajouter le gâteau"}
                         sx={{
                             py: { xs: 1, sm: 1.5 },
                             fontSize: { xs: '0.875rem', sm: '1rem' }

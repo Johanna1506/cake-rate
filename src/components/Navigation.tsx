@@ -403,19 +403,20 @@ export function Navigation() {
   );
 
   return (
-    <StyledAppBar position="static">
+    <StyledAppBar position="static" role="banner">
       <StyledToolbar>
-        <LogoContainer to="/">
-          <Logo src={logo} alt="Logo" />
+        <LogoContainer to="/" aria-label="Accueil">
+          <Logo src={logo} alt="Logo de l'application" />
         </LogoContainer>
 
-        <DesktopNav>
+        <DesktopNav role="navigation" aria-label="Navigation principale">
           {session?.session?.user ? (
             <>
               <NavButton
                 component={Link}
                 to="/"
                 startIcon={<HomeIcon />}
+                aria-label="Accéder à la page d'accueil"
               >
                 Accueil
               </NavButton>
@@ -423,6 +424,7 @@ export function Navigation() {
                 component={Link}
                 to="/cake-history"
                 startIcon={<HistoryIcon />}
+                aria-label="Accéder à l'historique des gâteaux"
               >
                 Historique
               </NavButton>
@@ -431,10 +433,13 @@ export function Navigation() {
                   onClick={handleUserMenuOpen}
                   color="inherit"
                   size="large"
+                  aria-label="Ouvrir le menu utilisateur"
+                  aria-expanded={Boolean(userMenuAnchor)}
+                  aria-haspopup="true"
                 >
                   <StyledAvatar
                     src={userDetails?.avatar_url || undefined}
-                    alt={userDetails?.name || "Avatar"}
+                    alt={`Avatar de ${userDetails?.name || "utilisateur"}`}
                   >
                     {userDetails?.name?.[0] || "U"}
                   </StyledAvatar>
@@ -446,14 +451,16 @@ export function Navigation() {
               component={Link}
               to="/login"
               startIcon={<LoginIcon />}
+              aria-label="Se connecter"
             >
               Connexion
             </NavButton>
           )}
-          <StyledTooltipWithRef title={mode === "dark" ? "Mode clair" : "Mode sombre"}>
+          <StyledTooltipWithRef title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
             <IconButton
               color="inherit"
               onClick={toggleTheme}
+              aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
               sx={{
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
@@ -468,7 +475,9 @@ export function Navigation() {
 
         <MobileMenuButton
           color="inherit"
-          aria-label="menu"
+          aria-label="Ouvrir le menu mobile"
+          aria-expanded={Boolean(mobileMenuAnchor)}
+          aria-haspopup="true"
           onClick={handleMobileMenuOpen}
         >
           <MenuIcon />

@@ -1,9 +1,29 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { compression } from 'vite-plugin-compression2';
+import { imagetools } from 'vite-imagetools';
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        react(),
+        compression({
+            algorithm: 'gzip',
+            exclude: [/\.(br)$/, /\.(gz)$/],
+            deleteOriginalAssets: false,
+        }),
+        compression({
+            algorithm: 'brotliCompress',
+            exclude: [/\.(br)$/, /\.(gz)$/],
+            deleteOriginalAssets: false,
+        }),
+        imagetools({
+            defaultDirectives: new URLSearchParams([
+                ['format', 'webp'],
+                ['quality', '80'],
+            ]),
+        }),
+    ],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
@@ -20,12 +40,27 @@ export default defineConfig({
         outDir: 'dist',
         assetsDir: 'assets',
         emptyOutDir: true,
-        sourcemap: true,
+        sourcemap: false,
         minify: 'terser',
         terserOptions: {
             compress: {
                 drop_console: true,
                 drop_debugger: true,
+                pure_funcs: ['console.log', 'console.info', 'console.debug'],
+                passes: 2,
+                dead_code: true,
+                global_defs: {
+                    'process.env.NODE_ENV': '"production"',
+                },
+            },
+            mangle: {
+                toplevel: true,
+                properties: {
+                    regex: /^_/,
+                },
+            },
+            format: {
+                comments: false,
             },
         },
         rollupOptions: {
@@ -37,7 +72,16 @@ export default defineConfig({
                 assetFileNames: 'assets/[name]-[hash][extname]',
                 chunkFileNames: 'assets/[name]-[hash].js',
                 entryFileNames: 'assets/[name]-[hash].js',
+                manualChunks: {
+                    vendor: ['react', 'react-dom', 'react-router-dom'],
+                    mui: ['@mui/material', '@mui/icons-material'],
+                    date: ['date-fns'],
+                    query: ['@tanstack/react-query'],
+                },
             },
         },
+    },
+    optimizeDeps: {
+        include: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@mui/icons-material', 'date-fns', '@tanstack/react-query'],
     },
 });

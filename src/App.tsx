@@ -11,6 +11,9 @@ import { Navigation } from "@components/Navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useSession, useUserDetails, useHasRole } from "@hooks/useAuthQuery";
 import { ToastProvider } from "@components/Toast";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { LoadingSpinner } from '@components/LoadingSpinner';
 
 // Lazy load all pages
 const Login = lazy(() => import("@pages/Login").then(module => ({ default: module.Login })));
@@ -25,6 +28,17 @@ const CakeHistory = lazy(() => import("@pages/CakeHistory").then(module => ({ de
 const UploadCake = lazy(() => import("@pages/UploadCake").then(module => ({ default: module.UploadCake })));
 const CakeDetails = lazy(() => import("@pages/CakeDetails").then(module => ({ default: module.CakeDetails })));
 const NotFound = lazy(() => import("@pages/NotFound").then(module => ({ default: module.NotFound })));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Loading component
 const Loading = () => (
@@ -91,7 +105,7 @@ function AppContent() {
   return (
     <>
       <Navigation />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route
             path="/"
@@ -190,12 +204,15 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Router basename="/cake-rate/">
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
-          <AppContent />
+          <Router basename="/cake-rate/">
+            <AppContent />
+          </Router>
         </ToastProvider>
       </ThemeProvider>
-    </Router>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

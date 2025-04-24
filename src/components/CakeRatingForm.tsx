@@ -32,9 +32,11 @@ interface CustomRatingProps {
   label: string;
   error?: boolean;
   helperText?: string;
+  ariaLabel: string;
+  ariaDescribedBy?: string;
 }
 
-function CustomRating({ value, onChange, max, label, error, helperText }: CustomRatingProps) {
+function CustomRating({ value, onChange, max, label, error, helperText, ariaLabel, ariaDescribedBy }: CustomRatingProps) {
   const handleChange = (_: React.SyntheticEvent, newValue: number | null) => {
     if (newValue === null) {
       onChange(null);
@@ -56,6 +58,8 @@ function CustomRating({ value, onChange, max, label, error, helperText }: Custom
         onChange={handleChange}
         size="large"
         precision={0.5}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
       />
       {value !== null && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -253,6 +257,8 @@ function RatingForm({
         flexDirection: 'column',
         gap: 2
       }}
+      role="form"
+      aria-label="Formulaire de notation du gâteau"
     >
       <Stack spacing={2}>
         <CustomRating
@@ -262,6 +268,8 @@ function RatingForm({
           label="Apparence"
           error={!!appearanceError}
           helperText={appearanceError}
+          ariaLabel="Noter l'apparence du gâteau"
+          ariaDescribedBy={appearanceError ? "appearance-error" : undefined}
         />
         <CustomRating
           value={taste}
@@ -270,6 +278,8 @@ function RatingForm({
           label="Goût"
           error={!!tasteError}
           helperText={tasteError}
+          ariaLabel="Noter le goût du gâteau"
+          ariaDescribedBy={tasteError ? "taste-error" : undefined}
         />
         <CustomRating
           value={themeAdherence}
@@ -278,6 +288,8 @@ function RatingForm({
           label="Respect du thème"
           error={!!themeAdherenceError}
           helperText={themeAdherenceError}
+          ariaLabel="Noter le respect du thème"
+          ariaDescribedBy={themeAdherenceError ? "theme-error" : undefined}
         />
       </Stack>
 
@@ -302,6 +314,8 @@ function RatingForm({
         onBlur={() => setCommentTouched(true)}
         error={!!commentError}
         helperText={commentError}
+        aria-label="Ajouter un commentaire sur le gâteau"
+        aria-describedby={commentError ? "comment-error" : undefined}
         sx={{
           '& .MuiInputBase-root': {
             fontSize: { xs: '0.875rem', sm: '1rem' },
@@ -325,6 +339,8 @@ function RatingForm({
             fontWeight: 600,
             fontSize: { xs: '1rem', sm: '1.1rem' }
           }}
+          role="status"
+          aria-label="Note totale du gâteau"
         >
           Note totale : {totalScore.toFixed(1)}/10
         </Typography>
@@ -335,6 +351,7 @@ function RatingForm({
         variant="contained"
         fullWidth
         disabled={loading}
+        aria-label={loading ? "Enregistrement de la note en cours..." : "Enregistrer la note"}
         sx={{
           py: 1.5,
           fontSize: { xs: '0.875rem', sm: '1rem' },
