@@ -32,6 +32,7 @@ import {
   Select,
   MenuItem,
   useTheme,
+  Tooltip,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
@@ -97,6 +98,13 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seasonToDelete, setSeasonToDelete] = useState<Season | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [formErrors, setFormErrors] = useState<{
+    theme?: string;
+    participantCount?: string;
+    weeks?: WeekFormData[];
+  }>({});
+
   const [weeks, setWeeks] = useState<WeekFormData[]>([
     {
       description: "",
@@ -106,12 +114,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       isActive: true,
     },
   ]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [formErrors, setFormErrors] = useState<{
-    theme?: string;
-    participantCount?: string;
-    weeks?: WeekFormData[];
-  }>({});
 
   useEffect(() => {
     if (isAdmin && isTabActive) {
@@ -119,6 +121,15 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       fetchUsers();
     }
   }, [isAdmin, loadData, isTabActive]);
+
+  useEffect(() => {
+    if (users.length > 0 && weeks.length > 0 && weeks[0].userId === null) {
+      setWeeks(prevWeeks => prevWeeks.map(week => ({
+        ...week,
+        userId: users[0].id
+      })));
+    }
+  }, [users]);
 
   const handleOpenDialog = (season?: Season & { weeks?: Week[] }) => {
     if (season) {
@@ -218,7 +229,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           description: "",
           startDate: new Date(),
           endDate: new Date(),
-          userId: null,
+          userId: users.length > 0 ? users[0].id : null,
           isActive: true,
         },
       ]);
@@ -289,8 +300,8 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
         isValid = false;
       }
 
-      if (week.isActive && !week.userId) {
-        weekError.userId = "Un participant doit être sélectionné pour une semaine active";
+      if (!week.userId) {
+        weekError.userId = "Un participant doit être sélectionné";
         isValid = false;
       }
 
@@ -606,20 +617,23 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                             />
                           </Box>
                           <Box sx={{ flex: 1 }}>
-                            <DatePicker
-                              label="Date de fin"
-                              value={week.endDate}
-                              onChange={(date) => handleWeekChange(index, "endDate", date)}
-                              format="dd/MM/yyyy"
-                              slotProps={{
-                                textField: {
-                                  fullWidth: true,
-                                  size: "small",
-                                  error: !!formErrors.weeks?.[index]?.errors?.endDate,
-                                  helperText: formErrors.weeks?.[index]?.errors?.endDate
-                                },
-                              }}
-                            />
+                            <Tooltip title={`La date de fin doit être postérieure au ${week.startDate.toLocaleDateString('fr-FR')}`}>
+                              <DatePicker
+                                label="Date de fin"
+                                value={week.endDate}
+                                onChange={(date) => handleWeekChange(index, "endDate", date)}
+                                format="dd/MM/yyyy"
+                                minDate={week.startDate}
+                                slotProps={{
+                                  textField: {
+                                    fullWidth: true,
+                                    size: "small",
+                                    error: !!formErrors.weeks?.[index]?.errors?.endDate,
+                                    helperText: formErrors.weeks?.[index]?.errors?.endDate || `Après le ${week.startDate.toLocaleDateString('fr-FR')}`
+                                  },
+                                }}
+                              />
+                            </Tooltip>
                           </Box>
                         </Box>
                       </LocalizationProvider>

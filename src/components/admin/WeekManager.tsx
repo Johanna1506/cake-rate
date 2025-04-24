@@ -3,6 +3,7 @@ import { useHasRole } from "@hooks/useAuthQuery";
 import { supabaseServer } from "@lib/supabase";
 import { Week, User, Season } from "../../types";
 import { useErrorHandler } from "@hooks/useErrorHandler";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Typography,
@@ -65,6 +66,7 @@ interface WeekFormErrors {
 export function WeekManager({ isTabActive }: WeekManagerProps) {
   const isAdmin = useHasRole("ADMIN");
   const { handleError, handleSuccess } = useErrorHandler();
+  const queryClient = useQueryClient();
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,6 +261,8 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
 
       handleCloseDialog();
       await fetchWeeks();
+      // Invalider le cache de la saison courante
+      await queryClient.invalidateQueries({ queryKey: ['currentSeason'] });
     } catch (err) {
       handleError(err);
     } finally {
@@ -281,6 +285,8 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       handleSuccess("Semaine supprimée avec succès");
       handleCloseDeleteDialog();
       await fetchWeeks();
+      // Invalider le cache de la saison courante
+      await queryClient.invalidateQueries({ queryKey: ['currentSeason'] });
     } catch (err) {
       handleError(err);
     } finally {

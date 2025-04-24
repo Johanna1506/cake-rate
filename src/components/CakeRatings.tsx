@@ -33,40 +33,98 @@ export function CakeRatings({ cake }: CakeRatingsProps) {
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      gap: 2,
-      mt: 3,
-      p: 2,
-      backgroundColor: 'background.default',
-      borderRadius: 1
+      gap: 2.5,
+      mt: 4,
+      p: 3,
+      borderRadius: 3,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+      transition: 'all 0.3s ease',
+      borderLeft: '4px solid',
+      borderColor: 'primary.main',
+      '&:hover': {
+        boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+        transform: 'translateY(-2px)'
+      },
+      '& .MuiRating-root': {
+        color: 'primary.main',
+        '& .MuiRating-iconFilled': {
+          filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
+        }
+      }
     }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+      <Typography
+        variant="h5"
+        sx={{
+          fontWeight: 700,
+          mb: 2,
+          color: 'primary.main',
+          textAlign: 'left',
+          letterSpacing: '0.5px'
+        }}
+      >
         Notes moyennes
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="body2" sx={{ minWidth: 120 }}>Apparence :</Typography>
-        <Rating value={displayAppearance} precision={0.5} readOnly size="small" />
-        <Typography variant="body2" color="text.secondary">
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        p: 1.5,
+        borderRadius: 2,
+        '&:hover': {
+          backgroundColor: 'action.hover'
+        }
+      }}>
+        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Apparence :</Typography>
+        <Rating value={displayAppearance} precision={0.5} readOnly size="medium" />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
           ({averages.appearance.toFixed(1)}/2.5)
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="body2" sx={{ minWidth: 120 }}>Goût :</Typography>
-        <Rating value={displayTaste} precision={0.5} readOnly size="small" />
-        <Typography variant="body2" color="text.secondary">
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        p: 1.5,
+        borderRadius: 2,
+        '&:hover': {
+          backgroundColor: 'action.hover'
+        }
+      }}>
+        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Goût :</Typography>
+        <Rating value={displayTaste} precision={0.5} readOnly size="medium" />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
           ({averages.taste.toFixed(1)}/5)
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="body2" sx={{ minWidth: 120 }}>Thème :</Typography>
-        <Rating value={displayThemeAdherence} precision={0.5} readOnly size="small" />
-        <Typography variant="body2" color="text.secondary">
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        p: 1.5,
+        borderRadius: 2,
+        '&:hover': {
+          backgroundColor: 'action.hover'
+        }
+      }}>
+        <Typography variant="body1" sx={{ minWidth: 120, fontWeight: 600 }}>Thème :</Typography>
+        <Rating value={displayThemeAdherence} precision={0.5} readOnly size="medium" />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 1, fontWeight: 500 }}>
           ({averages.theme_adherence.toFixed(1)}/2.5)
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-        <Typography variant="body2" sx={{ minWidth: 120, fontWeight: 600 }}>Total :</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {((averages.appearance + averages.taste + averages.theme_adherence) / 10 * 100).toFixed(1)}%
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        mt: 2,
+        pt: 2,
+        borderTop: '2px solid',
+        borderColor: 'divider',
+        p: 2,
+      }}>
+        <Typography variant="h6" sx={{ minWidth: 120, fontWeight: 700, color: 'primary.main' }}>Total :</Typography>
+        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+          {(averages.appearance + averages.taste + averages.theme_adherence).toFixed(1)}/10
         </Typography>
       </Box>
     </Box>

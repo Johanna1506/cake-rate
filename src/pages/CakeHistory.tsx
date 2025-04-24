@@ -146,21 +146,21 @@ const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week })
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <RatingBox>
           <Typography variant="body2">Apparence:</Typography>
-          <Rating value={averageAppearance} precision={0.5} readOnly />
+          <Rating value={averageAppearance * 2} precision={0.5} readOnly />
           <Typography variant="body2" color="text.secondary">
             ({averageAppearance.toFixed(1)})
           </Typography>
         </RatingBox>
         <RatingBox>
           <Typography variant="body2">Goût:</Typography>
-          <Rating value={averageTaste} precision={0.5} readOnly />
+          <Rating value={averageTaste * 2} precision={0.5} readOnly />
           <Typography variant="body2" color="text.secondary">
             ({averageTaste.toFixed(1)})
           </Typography>
         </RatingBox>
         <RatingBox>
           <Typography variant="body2">Respect du thème:</Typography>
-          <Rating value={averageTheme} precision={0.5} readOnly />
+          <Rating value={averageTheme * 2} precision={0.5} readOnly />
           <Typography variant="body2" color="text.secondary">
             ({averageTheme.toFixed(1)})
           </Typography>

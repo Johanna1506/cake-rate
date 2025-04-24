@@ -1,10 +1,10 @@
-import { Container, Typography, Box, Card, CardMedia, Paper, Rating, Button, Avatar, Chip, Skeleton } from "@mui/material";
+import { Container, Typography, Box, Card, CardMedia, Paper, Button, Avatar, Chip, Skeleton } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCake, useCakeRatings } from "@hooks/useCakeQuery";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Rating as RatingType } from "../types";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { CakeRatings } from "@components/CakeRatings";
 
 export function CakeDetails() {
   const { id } = useParams();
@@ -66,16 +66,6 @@ export function CakeDetails() {
     );
   }
 
-  const calculateAverage = (ratings: any[] | undefined, field: keyof RatingType) => {
-    if (!ratings || ratings.length === 0) return 0;
-    const sum = ratings.reduce((acc, rating) => acc + (rating[field] || 0), 0);
-    return sum / ratings.length;
-  };
-
-  const averageAppearance = calculateAverage(ratings, 'appearance');
-  const averageTaste = calculateAverage(ratings, 'taste');
-  const averageTheme = calculateAverage(ratings, 'theme_adherence');
-
   return (
     <Container maxWidth="lg">
       <Button
@@ -127,38 +117,8 @@ export function CakeDetails() {
           </Typography>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              {ratings && ratings.length > 0 ? "Notes moyennes" : "Pas de note pour le moment"}
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {ratings && ratings.some(rating => rating.appearance !== undefined) && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography variant="body1">Apparence:</Typography>
-                  <Rating value={averageAppearance} precision={0.5} readOnly />
-                  <Typography variant="body2" color="text.secondary">
-                    ({averageAppearance.toFixed(1)})
-                  </Typography>
-                </Box>
-              )}
-              {ratings && ratings.some(rating => rating.taste !== undefined) && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography variant="body1">Goût:</Typography>
-                  <Rating value={averageTaste} precision={0.5} readOnly />
-                  <Typography variant="body2" color="text.secondary">
-                    ({averageTaste.toFixed(1)})
-                  </Typography>
-                </Box>
-              )}
-              {ratings && ratings.some(rating => rating.theme_adherence !== undefined) && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography variant="body1">Respect du thème:</Typography>
-                  <Rating value={averageTheme} precision={0.5} readOnly />
-                  <Typography variant="body2" color="text.secondary">
-                    ({averageTheme.toFixed(1)})
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+
+            <CakeRatings cake={{ ...cake, ratings }} />
           </Box>
 
           {ratings && ratings.some(rating => rating.comment) && (
