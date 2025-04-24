@@ -72,10 +72,28 @@ export default defineConfig({
                 assetFileNames: 'assets/[name]-[hash][extname]',
                 chunkFileNames: 'assets/[name]-[hash].js',
                 entryFileNames: 'assets/[name]-[hash].js',
-                manualChunks: {
-                    'react-core': ['react', 'react-dom'],
-                    'react-router': ['react-router-dom'],
-                    'react-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
+                manualChunks: function (id) {
+                    if (id.includes('node_modules')) {
+                        return 'vendor';
+                    }
+                    if (id.includes('src/pages')) {
+                        return 'pages';
+                    }
+                    if (id.includes('src/components')) {
+                        return 'components';
+                    }
+                    if (id.includes('src/hooks')) {
+                        return 'hooks';
+                    }
+                    if (id.includes('src/services')) {
+                        return 'services';
+                    }
+                    if (id.includes('src/lib')) {
+                        return 'lib';
+                    }
+                    if (id.includes('src/context')) {
+                        return 'context';
+                    }
                 },
             },
         },
