@@ -20,8 +20,72 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentSeason } from '../hooks/useWeekQuery';
 import { useSession, useUserDetails } from "@hooks/useAuthQuery";
 import { ActiveWeekCard } from "@components/ActiveWeekCard";
-import emptySeasonImage from '../../public/images/empty-season.svg';
 import preparingSeasonImage from '../../public/images/preparing-season.svg';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import ShareIcon from '@mui/icons-material/Share';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
+const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => {
+  return (
+    <Card sx={{
+      p: 3,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: (theme) => `0 8px 16px ${theme.palette.primary.main}15`,
+        '& .icon-container': {
+          bgcolor: 'primary.main',
+        }
+      }
+    }}>
+      <Box
+        className="icon-container"
+        sx={{
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          bgcolor: 'primary.light',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 2,
+          transition: 'background-color 0.2s ease',
+          '& .MuiSvgIcon-root': {
+            transition: 'color 0.2s ease',
+            color: 'primary.dark'
+          },
+          '&:hover': {
+            '& .MuiSvgIcon-root': {
+              color: 'white'
+            }
+          }
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography
+        variant="h6"
+        sx={{
+          mb: 2,
+          fontWeight: 600
+        }}
+      >
+        {title}
+      </Typography>
+      <Typography
+        variant="body1"
+        color="text.secondary"
+      >
+        {description}
+      </Typography>
+    </Card>
+  );
+};
 
 export function Home() {
   const queryClient = useQueryClient();
@@ -44,37 +108,106 @@ export function Home() {
   if (!season) {
     return (
       <Container maxWidth="md">
-        <Alert
-          severity="info"
-          sx={{
-            mt: 4,
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-            p: 3,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            '& .MuiAlert-icon': {
-              display: 'none'
-            },
-            '& .MuiAlert-message': {
-              fontSize: '1.1rem',
-              fontWeight: 500,
+        <Box sx={{
+          mt: 8,
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4
+        }}>
+          <Typography
+            variant="h2"
+            component="h1"
+            sx={{
+              fontWeight: 600,
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              color: 'primary.main',
+              mb: 2
+            }}
+          >
+            Cake Rate
+          </Typography>
+
+          <Alert
+            severity="info"
+            sx={{
+              width: '100%',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              borderRadius: '16px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              p: 3,
               display: 'flex',
               alignItems: 'center',
-              gap: 2
-            }
-          }}
-        >
-          <img
-            src={emptySeasonImage}
-            alt="Aucune saison active"
-            style={{ width: '48px', height: '48px' }}
-          />
-          Aucune saison n'est active pour le moment. Revenez plus tard pour participer à la prochaine saison !
-        </Alert>
+              gap: 2,
+              '& .MuiAlert-icon': {
+                display: 'none'
+              },
+              '& .MuiAlert-message': {
+                fontSize: '1.1rem',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }
+            }}
+          >
+            <img
+              src={preparingSeasonImage}
+              alt="Aucune saison active"
+              style={{ width: '48px', height: '48px' }}
+            />
+            Aucune saison n'est active pour le moment. Revenez plus tard pour participer à la prochaine saison !
+          </Alert>
+
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 500,
+              color: 'text.secondary',
+              maxWidth: '600px',
+              mb: 4
+            }}
+          >
+            Un concours de pâtisserie entre collègues
+          </Typography>
+
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: 4,
+            width: '100%',
+            maxWidth: '1000px'
+          }}>
+            <FeatureCard
+              icon={<RestaurantMenuIcon sx={{ fontSize: 32, color: 'primary.dark' }} />}
+              title="Créez"
+              description="Réalisez des gâteaux créatifs selon les thèmes proposés chaque semaine"
+            />
+            <FeatureCard
+              icon={<ShareIcon sx={{ fontSize: 32, color: 'primary.dark' }} />}
+              title="Partagez"
+              description="Partagez vos créations avec vos collègues et découvrez leurs talents"
+            />
+            <FeatureCard
+              icon={<EmojiEventsIcon sx={{ fontSize: 32, color: 'primary.dark' }} />}
+              title="Gagnez"
+              description="Remportez des récompenses et devenez le meilleur pâtissier de l'équipe"
+            />
+          </Box>
+
+          <Typography
+            variant="body1"
+            sx={{
+              mt: 6,
+              color: 'text.secondary',
+              maxWidth: '600px'
+            }}
+          >
+            Revenez bientôt pour participer à notre prochaine saison de concours de pâtisserie !
+          </Typography>
+        </Box>
       </Container>
     );
   }
