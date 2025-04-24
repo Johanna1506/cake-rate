@@ -74,7 +74,6 @@ export default defineConfig({
                 entryFileNames: 'assets/[name]-[hash].js',
                 manualChunks: {
                     'react-core': ['react', 'react-dom'],
-                    'mui-core': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
                     'react-router': ['react-router-dom'],
                     'react-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
                 },
