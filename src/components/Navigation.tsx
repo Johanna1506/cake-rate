@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@context/ThemeContext";
 import {
@@ -44,16 +44,17 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     theme.palette.mode === "dark"
       ? alpha(theme.palette.background.paper, 0.8)
       : alpha(theme.palette.primary.main, 0.9),
-  backdropFilter: 'blur(10px)',
-  transition: 'all 0.3s ease-in-out',
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 2px 10px rgba(0, 0, 0, 0.2)'
-    : '0 2px 10px rgba(0, 0, 0, 0.1)',
-  [theme.breakpoints.down('sm')]: {
+  backdropFilter: "blur(10px)",
+  transition: "all 0.3s ease-in-out",
+  boxShadow:
+    theme.palette.mode === "dark"
+      ? "0 2px 10px rgba(0, 0, 0, 0.2)"
+      : "0 2px 10px rgba(0, 0, 0, 0.1)",
+  [theme.breakpoints.down("sm")]: {
     padding: theme.spacing(0, 1),
   },
-  [theme.breakpoints.down('md')]: {
-    display: 'none',
+  [theme.breakpoints.down("md")]: {
+    display: "none",
   },
 })) as typeof AppBar;
 
@@ -62,10 +63,10 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   justifyContent: "space-between",
   alignItems: "center",
   padding: theme.spacing(0, 2),
-  [theme.breakpoints.up('md')]: {
+  [theme.breakpoints.up("md")]: {
     padding: theme.spacing(0, 4),
   },
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down("sm")]: {
     padding: theme.spacing(0, 1),
   },
 })) as typeof Toolbar;
@@ -75,17 +76,17 @@ const LogoContainer = styled(Link)(() => ({
   alignItems: "center",
   textDecoration: "none",
   color: "inherit",
-  transition: 'transform 0.2s ease-in-out',
-  '&:hover': {
-    transform: 'scale(1.05)',
+  transition: "transform 0.2s ease-in-out",
+  "&:hover": {
+    transform: "scale(1.05)",
   },
 }));
 
 const Logo = styled("img")(({ theme }) => ({
   height: 45,
   marginRight: 12,
-  transition: 'all 0.3s ease-in-out',
-  [theme.breakpoints.down('sm')]: {
+  transition: "all 0.3s ease-in-out",
+  [theme.breakpoints.down("sm")]: {
     height: 35,
     marginRight: 8,
   },
@@ -97,22 +98,28 @@ const NavLinks = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 })) as typeof Box;
 
-const NavButton = styled(Button)<{ component?: React.ElementType; to?: string }>(({ theme }) => ({
-  color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.white,
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
+const NavButton = styled(Button)<{
+  component?: React.ElementType;
+  to?: string;
+}>(({ theme }) => ({
+  color:
+    theme.palette.mode === "dark"
+      ? theme.palette.common.white
+      : theme.palette.common.white,
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
     backgroundColor: alpha(theme.palette.common.white, 0.1),
-    transform: 'translateY(-1px)',
+    transform: "translateY(-1px)",
   },
-  '& .MuiButton-startIcon': {
-    transition: 'transform 0.2s ease-in-out',
+  "& .MuiButton-startIcon": {
+    transition: "transform 0.2s ease-in-out",
   },
-  '&:hover .MuiButton-startIcon': {
-    transform: 'scale(1.1)',
+  "&:hover .MuiButton-startIcon": {
+    transform: "scale(1.1)",
   },
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down("sm")]: {
     padding: theme.spacing(0.5, 1),
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
   },
 })) as typeof Button;
 
@@ -120,36 +127,42 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 36,
   height: 36,
   border: `2px solid ${alpha(theme.palette.common.white, 0.2)}`,
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
-    transform: 'scale(1.1)',
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    transform: "scale(1.1)",
     borderColor: alpha(theme.palette.common.white, 0.4),
   },
 })) as typeof Avatar;
 
 const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
     backgroundColor: alpha(theme.palette.action.hover, 0.08),
   },
 })) as typeof MenuItem;
 
 const StyledTooltip = styled(Tooltip)(({ theme }) => ({
-  '& .MuiTooltip-tooltip': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.grey[800], 0.95)
-      : alpha(theme.palette.grey[700], 0.95),
-    backdropFilter: 'blur(10px)',
-    fontSize: '0.875rem',
-    padding: '4px 8px',
-    borderRadius: '4px',
+  "& .MuiTooltip-tooltip": {
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? alpha(theme.palette.grey[800], 0.95)
+        : alpha(theme.palette.grey[700], 0.95),
+    backdropFilter: "blur(10px)",
+    fontSize: "0.875rem",
+    padding: "4px 8px",
+    borderRadius: "4px",
   },
 })) as typeof Tooltip;
 
-const StyledTooltipWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledTooltip>>((props, ref) => (
+const StyledTooltipWithRef = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<typeof StyledTooltip>
+>((props, ref) => (
   <StyledTooltip {...props} ref={ref} />
-)) as React.ForwardRefExoticComponent<React.ComponentProps<typeof StyledTooltip> & React.RefAttributes<HTMLDivElement>>;
-
+)) as React.ForwardRefExoticComponent<
+  React.ComponentProps<typeof StyledTooltip> &
+    React.RefAttributes<HTMLDivElement>
+>;
 
 const DesktopNav = styled(NavLinks)(({ theme }) => ({
   [theme.breakpoints.down("md")]: {
@@ -158,74 +171,84 @@ const DesktopNav = styled(NavLinks)(({ theme }) => ({
 })) as typeof NavLinks;
 
 const StyledMenu = styled(Menu)(({ theme }) => ({
-  '& .MuiPaper-root': {
-    minWidth: '200px',
-    borderRadius: '8px',
-    marginTop: '8px',
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.95)
-      : alpha(theme.palette.background.paper, 0.98),
-    backdropFilter: 'blur(10px)',
+  "& .MuiPaper-root": {
+    minWidth: "200px",
+    borderRadius: "8px",
+    marginTop: "8px",
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? alpha(theme.palette.background.paper, 0.95)
+        : alpha(theme.palette.background.paper, 0.98),
+    backdropFilter: "blur(10px)",
     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 20px rgba(0, 0, 0, 0.3)'
-      : '0 4px 20px rgba(0, 0, 0, 0.15)',
+    boxShadow:
+      theme.palette.mode === "dark"
+        ? "0 4px 20px rgba(0, 0, 0, 0.3)"
+        : "0 4px 20px rgba(0, 0, 0, 0.15)",
   },
 })) as typeof Menu;
 
-const StyledMenuWithRef = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof StyledMenu>>((props, ref) => (
+const StyledMenuWithRef = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<typeof StyledMenu>
+>((props, ref) => (
   <StyledMenu {...props} ref={ref} />
-)) as React.ForwardRefExoticComponent<React.ComponentProps<typeof StyledMenu> & React.RefAttributes<HTMLDivElement>>;
+)) as React.ForwardRefExoticComponent<
+  React.ComponentProps<typeof StyledMenu> & React.RefAttributes<HTMLDivElement>
+>;
 
 const MobileBottomNav = styled(Paper)(({ theme }) => ({
-  position: 'fixed',
+  position: "fixed",
   bottom: 0,
   left: 0,
   right: 0,
   zIndex: theme.zIndex.appBar,
-  display: 'none',
-  [theme.breakpoints.down('md')]: {
-    display: 'block',
+  display: "none",
+  [theme.breakpoints.down("md")]: {
+    display: "block",
   },
-  '& .MuiBottomNavigation-root': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.8)
-      : alpha(theme.palette.background.paper, 0.9),
-    backdropFilter: 'blur(10px)',
+  "& .MuiBottomNavigation-root": {
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? alpha(theme.palette.background.paper, 0.8)
+        : alpha(theme.palette.background.paper, 0.9),
+    backdropFilter: "blur(10px)",
     borderTop: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-    borderTopLeftRadius: '18px',
-    borderTopRightRadius: '18px',
-    height: '64px',
-    padding: '4px 0',
+    borderTopLeftRadius: "18px",
+    borderTopRightRadius: "18px",
+    height: "64px",
+    padding: "4px 0",
   },
-  '& .MuiBottomNavigationAction-root': {
-    minWidth: 'auto',
-    padding: '6px 12px',
-    color: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.text.primary, 0.5)
-      : alpha(theme.palette.text.primary, 0.4),
-    transition: 'all 0.2s ease-in-out',
-    '&.Mui-selected': {
-      color: theme.palette.mode === 'dark'
-        ? theme.palette.primary.light
-        : theme.palette.primary.main,
+  "& .MuiBottomNavigationAction-root": {
+    minWidth: "auto",
+    padding: "6px 12px",
+    color:
+      theme.palette.mode === "dark"
+        ? alpha(theme.palette.text.primary, 0.5)
+        : alpha(theme.palette.text.primary, 0.4),
+    transition: "all 0.2s ease-in-out",
+    "&.Mui-selected": {
+      color:
+        theme.palette.mode === "dark"
+          ? theme.palette.primary.light
+          : theme.palette.primary.main,
     },
-    '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.7rem',
-      marginTop: '2px',
-      '&.Mui-selected': {
-        fontSize: '0.7rem',
+    "& .MuiBottomNavigationAction-label": {
+      fontSize: "0.7rem",
+      marginTop: "2px",
+      "&.Mui-selected": {
+        fontSize: "0.7rem",
         fontWeight: 500,
       },
     },
-    '& .MuiSvgIcon-root': {
-      fontSize: '24px',
+    "& .MuiSvgIcon-root": {
+      fontSize: "24px",
     },
   },
 }));
 
-const PageWrapper = styled('div')(({ theme }) => ({
-  [theme.breakpoints.up('md')]: {
+const PageWrapper = styled("div")(({ theme }) => ({
+  [theme.breakpoints.up("md")]: {
     paddingBottom: 0,
   },
 }));
@@ -239,7 +262,9 @@ export function Navigation() {
   );
   const isAdmin = useHasRole("ADMIN");
   const signOut = useSignOut();
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [value, setValue] = useState(0);
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -264,10 +289,10 @@ export function Navigation() {
     setValue(newValue);
     switch (newValue) {
       case 0:
-        navigate('/');
+        navigate("/");
         break;
       case 1:
-        navigate('/cake-history');
+        navigate("/cake-history");
         break;
       case 2:
         handleUserMenuOpen(event as React.MouseEvent<HTMLElement>);
@@ -284,15 +309,17 @@ export function Navigation() {
       onClose={handleUserMenuClose}
       onClick={handleUserMenuClose}
       anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'center',
+        vertical: "top",
+        horizontal: "center",
       }}
       transformOrigin={{
-        vertical: 'bottom',
-        horizontal: 'center',
+        vertical: "bottom",
+        horizontal: "center",
       }}
     >
-      <StyledMenuItem onClick={() => navigate("/profile")}>
+      <StyledMenuItem
+        onClick={() => navigate(`/profile/${session?.session?.user?.id}`)}
+      >
         <ListItemIcon>
           <PersonIcon fontSize="small" />
         </ListItemIcon>
@@ -371,15 +398,25 @@ export function Navigation() {
                 Connexion
               </NavButton>
             )}
-            <StyledTooltipWithRef title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+            <StyledTooltipWithRef
+              title={
+                mode === "dark"
+                  ? "Passer en mode clair"
+                  : "Passer en mode sombre"
+              }
+            >
               <IconButton
                 color="inherit"
                 onClick={toggleTheme}
-                aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+                aria-label={
+                  mode === "dark"
+                    ? "Passer en mode clair"
+                    : "Passer en mode sombre"
+                }
                 sx={{
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'rotate(15deg) scale(1.1)',
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    transform: "rotate(15deg) scale(1.1)",
                   },
                 }}
               >
@@ -393,15 +430,8 @@ export function Navigation() {
       <PageWrapper>
         {session?.session?.user && (
           <MobileBottomNav elevation={0}>
-            <BottomNavigation
-              value={value}
-              onChange={handleChange}
-              showLabels
-            >
-              <BottomNavigationAction
-                label="Accueil"
-                icon={<HomeIcon />}
-              />
+            <BottomNavigation value={value} onChange={handleChange} showLabels>
+              <BottomNavigationAction label="Accueil" icon={<HomeIcon />} />
               <BottomNavigationAction
                 label="Historique"
                 icon={<HistoryIcon />}

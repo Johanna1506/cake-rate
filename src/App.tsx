@@ -11,23 +11,55 @@ import { Navigation } from "@components/Navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { useSession, useUserDetails, useHasRole } from "@hooks/useAuthQuery";
 import { ToastProvider } from "@components/Toast";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { LoadingSpinner } from '@components/LoadingSpinner';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { LoadingSpinner } from "@components/LoadingSpinner";
 
 // Lazy load all pages
-const Login = lazy(() => import("@pages/Login").then(module => ({ default: module.Login })));
-const SignUp = lazy(() => import("@pages/SignUp").then(module => ({ default: module.SignUp })));
-const ForgotPassword = lazy(() => import("@pages/ForgotPassword").then(module => ({ default: module.ForgotPassword })));
-const ResetPassword = lazy(() => import("@pages/ResetPassword").then(module => ({ default: module.ResetPassword })));
-const Home = lazy(() => import("@pages/Home").then(module => ({ default: module.Home })));
-const Admin = lazy(() => import("@pages/Admin").then(module => ({ default: module.Admin })));
-const Profile = lazy(() => import("@pages/Profile").then(module => ({ default: module.Profile })));
-const RateCake = lazy(() => import("@pages/RateCake").then(module => ({ default: module.RateCake })));
-const CakeHistory = lazy(() => import("@pages/CakeHistory").then(module => ({ default: module.CakeHistory })));
-const UploadCake = lazy(() => import("@pages/UploadCake").then(module => ({ default: module.UploadCake })));
-const CakeDetails = lazy(() => import("@pages/CakeDetails").then(module => ({ default: module.CakeDetails })));
-const NotFound = lazy(() => import("@pages/NotFound").then(module => ({ default: module.NotFound })));
+const Login = lazy(() =>
+  import("@pages/Login").then((module) => ({ default: module.Login }))
+);
+const SignUp = lazy(() =>
+  import("@pages/SignUp").then((module) => ({ default: module.SignUp }))
+);
+const ForgotPassword = lazy(() =>
+  import("@pages/ForgotPassword").then((module) => ({
+    default: module.ForgotPassword,
+  }))
+);
+const ResetPassword = lazy(() =>
+  import("@pages/ResetPassword").then((module) => ({
+    default: module.ResetPassword,
+  }))
+);
+const Home = lazy(() =>
+  import("@pages/Home").then((module) => ({ default: module.Home }))
+);
+const Admin = lazy(() =>
+  import("@pages/Admin").then((module) => ({ default: module.Admin }))
+);
+const Profile = lazy(() =>
+  import("@pages/Profile").then((module) => ({ default: module.Profile }))
+);
+const RateCake = lazy(() =>
+  import("@pages/RateCake").then((module) => ({ default: module.RateCake }))
+);
+const CakeHistory = lazy(() =>
+  import("@pages/CakeHistory").then((module) => ({
+    default: module.CakeHistory,
+  }))
+);
+const UploadCake = lazy(() =>
+  import("@pages/UploadCake").then((module) => ({ default: module.UploadCake }))
+);
+const CakeDetails = lazy(() =>
+  import("@pages/CakeDetails").then((module) => ({
+    default: module.CakeDetails,
+  }))
+);
+const NotFound = lazy(() =>
+  import("@pages/NotFound").then((module) => ({ default: module.NotFound }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -103,7 +135,7 @@ function AppContent() {
   }
 
   return (
-    <Box sx={{ pb: { xs: '80px', sm: 0 } }}>
+    <Box sx={{ pb: { xs: "80px", sm: 0 } }}>
       <Navigation />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
@@ -180,7 +212,7 @@ function AppContent() {
             }
           />
           <Route
-            path="/profile"
+            path="/profile/:userId?"
             element={
               <PrivateRoute>
                 <Profile />

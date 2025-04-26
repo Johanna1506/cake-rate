@@ -3,6 +3,7 @@ import { useHasRole } from "@hooks/useAuthQuery";
 import { supabaseServer } from "@lib/supabase";
 import { User, UserRole } from "../../types";
 import { useErrorHandler } from "@hooks/useErrorHandler";
+import { Link } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -45,6 +46,16 @@ const RoleChip = styled(Chip)(() => ({
   fontWeight: "bold",
 }));
 
+const StyledBox = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    color: theme.palette.primary.main,
+    transform: "translateX(4px)",
+  },
+})) as typeof Box;
+
 interface UserManagerProps {
   isTabActive: boolean;
 }
@@ -79,7 +90,9 @@ export function UserManager({ isTabActive }: UserManagerProps) {
   }, [handleError]);
 
   const handleAdminError = useCallback(() => {
-    handleError("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
+    handleError(
+      "Vous n'avez pas les permissions nécessaires pour accéder à cette page"
+    );
     setLoading(false);
   }, [handleError]);
 
@@ -211,14 +224,19 @@ export function UserManager({ isTabActive }: UserManagerProps) {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar
-                          src={user.avatar_url}
-                          alt={user.name}
-                          sx={{ mr: 2 }}
-                        />
-                        <Typography variant="body1">{user.name}</Typography>
-                      </Box>
+                      <Link
+                        to={`/profile/${user.id}`}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        <StyledBox>
+                          <Avatar
+                            src={user.avatar_url}
+                            alt={user.name}
+                            sx={{ mr: 2 }}
+                          />
+                          <Typography variant="body1">{user.name}</Typography>
+                        </StyledBox>
+                      </Link>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>

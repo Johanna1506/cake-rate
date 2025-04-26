@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useIsAdmin } from "@hooks/useAuthQuery";
 import { useSeasons } from "@hooks/useSeasons";
 import { useErrorHandler } from "@hooks/useErrorHandler";
@@ -85,6 +85,7 @@ interface SeasonManagerProps {
 
 export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const theme = useTheme();
+  const themeInputRef = useRef<HTMLInputElement>(null);
   const {
     seasons,
     loading: seasonsLoading,
@@ -104,7 +105,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seasonToDelete, setSeasonToDelete] = useState<Season | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [formErrors, setFormErrors] = useState<{
     theme?: string;
@@ -170,7 +170,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           startDate: new Date(),
           endDate: new Date(),
           userId: null,
-          isActive: false,
+          isActive: true,
         },
       ]);
     }
@@ -220,12 +220,12 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       // Add new weeks
       const newWeeks = Array(value - currentWeeks)
         .fill(null)
-        .map(() => ({
+        .map((_, index) => ({
           description: "",
           startDate: new Date(),
           endDate: new Date(),
           userId: null,
-          isActive: true,
+          isActive: currentWeeks === 0 && index === 0, // Active uniquement si c'est la première semaine
         }));
       setWeeks([...weeks, ...newWeeks]);
     } else if (value < currentWeeks) {
@@ -243,7 +243,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           startDate: new Date(),
           endDate: new Date(),
           userId: users.length > 0 ? users[0].id : null,
-          isActive: true,
+          isActive: weeks.length === 0,
         },
       ]);
     }
@@ -310,12 +310,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       const weekErrors = weeks.map((week, index) => {
         const weekError: WeekFormData["errors"] = {};
 
-        if (!week.description.trim()) {
-          weekError.description = "La description est requise";
-          isValid = false;
-          console.log(`Week ${index + 1} validation failed: empty description`);
-        }
-
         if (!week.startDate) {
           weekError.startDate = "La date de début est requise";
           isValid = false;
@@ -365,6 +359,14 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
     console.log("handleSubmit called");
     if (!validateForm()) {
       console.log("Form validation failed");
+      // Faire défiler vers le champ en erreur
+      if (formErrors.theme && themeInputRef.current) {
+        themeInputRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        themeInputRef.current.focus();
+      }
       return;
     }
 
@@ -378,10 +380,10 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
       if (isEditing && currentSeason) {
         await saveSeason(seasonData, currentSeason.id);
-        setSuccess("Saison mise à jour avec succès");
+        handleSuccess("Saison mise à jour avec succès");
       } else {
         await saveSeason(seasonData, undefined, weeks);
-        setSuccess("Saison créée avec succès");
+        handleSuccess("Saison créée avec succès");
       }
 
       handleCloseDialog();
@@ -469,15 +471,6 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             sx={{ mb: 2, [theme.breakpoints.up("sm")]: { mb: 3 } }}
           >
             {seasonsError}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert
-            severity="success"
-            sx={{ mb: 2, [theme.breakpoints.up("sm")]: { mb: 3 } }}
-          >
-            {success}
           </Alert>
         )}
 
@@ -605,6 +598,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
               error={!!formErrors.theme}
               required
               size="small"
+              inputRef={themeInputRef}
               sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
             />
 

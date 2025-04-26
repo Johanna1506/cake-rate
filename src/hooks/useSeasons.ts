@@ -91,25 +91,27 @@ export function useSeasons() {
           .single();
 
         if (seasonError) throw seasonError;
+        if (!season) throw new Error("La création de la saison a échoué");
 
         // Créer les semaines
         const weeksToCreate =
-          weeks?.map((week) => ({
+          weeks?.map((week, index) => ({
             season_id: season.id,
             description: week.description,
             start_date: week.startDate.toISOString(),
             end_date: week.endDate.toISOString(),
-            is_active: false,
+            is_active: index === 0, // Première semaine active, les autres inactives
             show_scores: false,
-            user_id: week.userId,
+            user_id: week.userId || null,
           })) ||
-          Array.from({ length: seasonData.participant_count }, () => ({
+          Array.from({ length: seasonData.participant_count }, (_, index) => ({
             season_id: season.id,
             description: "",
             start_date: new Date().toISOString(),
             end_date: new Date().toISOString(),
-            is_active: false,
+            is_active: index === 0, // Première semaine active, les autres inactives
             show_scores: false,
+            user_id: null,
           }));
 
         console.log("Creating weeks:", weeksToCreate); // Debug log
@@ -124,12 +126,17 @@ export function useSeasons() {
           throw weeksError;
         }
 
+        if (!createdWeeks || createdWeeks.length === 0) {
+          throw new Error("La création des semaines a échoué");
+        }
+
         console.log("Created weeks:", createdWeeks); // Debug log
 
-        response = season;
+        response = { data: season, error: null };
       }
 
       if (response.error) throw response.error;
+      if (!response.data) throw new Error("La réponse est invalide");
 
       setSuccess(
         seasonId
