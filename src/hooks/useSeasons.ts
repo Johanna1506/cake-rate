@@ -55,11 +55,26 @@ export function useSeasons() {
     }
   }, [fetchSeasons]);
 
-  const saveSeason = async (seasonData: Omit<Season, "id">, seasonId?: string, weeks?: WeekFormData[]) => {
+  const saveSeason = async (
+    seasonData: Omit<Season, "id">,
+    seasonId?: string,
+    weeks?: WeekFormData[]
+  ) => {
     try {
       setError(null);
       setSuccess(null);
       setLoading(true);
+
+      // Si on active une nouvelle saison, désactiver la saison active existante
+      if (seasonData.is_active) {
+        const { error: deactivateError } = await supabaseServer
+          .from("seasons")
+          .update({ is_active: false })
+          .eq("is_active", true)
+          .neq("id", seasonId || ""); // Ne pas désactiver la saison qu'on est en train de modifier
+
+        if (deactivateError) throw deactivateError;
+      }
 
       let response;
       if (seasonId) {
@@ -78,23 +93,24 @@ export function useSeasons() {
         if (seasonError) throw seasonError;
 
         // Créer les semaines
-        const weeksToCreate = weeks?.map((week) => ({
-          season_id: season.id,
-          description: week.description,
-          start_date: week.startDate.toISOString(),
-          end_date: week.endDate.toISOString(),
-          is_active: false,
-          show_scores: false,
-
-          user_id: week.userId
-        })) || Array.from({ length: seasonData.participant_count }, () => ({
-          season_id: season.id,
-          description: "",
-          start_date: new Date().toISOString(),
-          end_date: new Date().toISOString(),
-          is_active: false,
-          show_scores: false,
-        }));
+        const weeksToCreate =
+          weeks?.map((week) => ({
+            season_id: season.id,
+            description: week.description,
+            start_date: week.startDate.toISOString(),
+            end_date: week.endDate.toISOString(),
+            is_active: false,
+            show_scores: false,
+            user_id: week.userId,
+          })) ||
+          Array.from({ length: seasonData.participant_count }, () => ({
+            season_id: season.id,
+            description: "",
+            start_date: new Date().toISOString(),
+            end_date: new Date().toISOString(),
+            is_active: false,
+            show_scores: false,
+          }));
 
         console.log("Creating weeks:", weeksToCreate); // Debug log
 
@@ -122,9 +138,13 @@ export function useSeasons() {
       );
       await fetchSeasons();
       return true;
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erreur lors de l'enregistrement de la saison:", err);
-      setError(err.message || "Erreur lors de l'enregistrement de la saison");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors de l'enregistrement de la saison"
+      );
       return false;
     } finally {
       setLoading(false);

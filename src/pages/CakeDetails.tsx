@@ -1,14 +1,31 @@
-import { Container, Typography, Box, Card, CardMedia, Paper, Button, Avatar, Chip, Skeleton } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Box,
+  Card,
+  CardMedia,
+  Paper,
+  Button,
+  Avatar,
+  Chip,
+  Skeleton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+} from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCake, useCakeRatings } from "@hooks/useCakeQuery";
+import { useHasRole } from "@hooks/useAuthQuery";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { CakeRatings } from "@components/CakeRatings";
 
 export function CakeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isAdmin = useHasRole("ADMIN");
 
   const { data: cake, isLoading } = useCake(id);
   const { data: ratings } = useCakeRatings(id);
@@ -38,7 +55,9 @@ export function CakeDetails() {
 
             <Box sx={{ mb: 4 }}>
               <Skeleton variant="text" width="30%" height={32} />
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+              >
                 <Skeleton variant="rectangular" width="100%" height={40} />
                 <Skeleton variant="rectangular" width="100%" height={40} />
                 <Skeleton variant="rectangular" width="100%" height={40} />
@@ -46,7 +65,9 @@ export function CakeDetails() {
             </Box>
 
             <Skeleton variant="text" width="30%" height={32} />
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+            >
               <Skeleton variant="rectangular" width="100%" height={80} />
               <Skeleton variant="rectangular" width="100%" height={80} />
             </Box>
@@ -104,31 +125,68 @@ export function CakeDetails() {
             />
           </Box>
           <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            {cake.week?.start_date && format(new Date(cake.week.start_date), "dd MMMM yyyy", {
-              locale: fr,
-            })}
+            {cake.week?.start_date &&
+              format(new Date(cake.week.start_date), "dd MMMM yyyy", {
+                locale: fr,
+              })}
             {" - "}
-            {cake.week?.end_date && format(new Date(cake.week.end_date), "dd MMMM yyyy", {
-              locale: fr,
-            })}
+            {cake.week?.end_date &&
+              format(new Date(cake.week.end_date), "dd MMMM yyyy", {
+                locale: fr,
+              })}
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
             {cake.description}
           </Typography>
 
           <Box sx={{ mb: 4 }}>
+            {isAdmin && ratings && ratings.length > 0 && (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  Liste des votants
+                </Typography>
+                <List sx={{ mb: 3 }}>
+                  {ratings.map((rating) => (
+                    <ListItem key={rating.id}>
+                      <ListItemAvatar>
+                        <Avatar
+                          src={rating.user?.avatar_url}
+                          alt={rating.user?.name}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={rating.user?.name}
+                        secondary={format(
+                          new Date(rating.created_at),
+                          "dd MMMM yyyy",
+                          {
+                            locale: fr,
+                          }
+                        )}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
 
-            <CakeRatings cake={{ ...cake, ratings }} />
+            {cake.week?.show_scores ? (
+              <CakeRatings cake={{ ...cake, ratings }} />
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Les notes ne sont pas encore disponibles
+              </Typography>
+            )}
           </Box>
 
-          {ratings && ratings.some(rating => rating.comment) && (
+          {ratings && ratings.some((rating) => rating.comment) && (
             <>
               <Typography variant="h6" gutterBottom>
                 Commentaires
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {ratings
-                  .filter(rating => rating.comment)
+                  .filter((rating) => rating.comment)
                   .map((rating, index) => (
                     <Paper
                       key={index}
@@ -139,13 +197,23 @@ export function CakeDetails() {
                         backgroundColor: "rgba(25, 118, 210, 0.04)",
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
                         <Avatar
                           src={rating.user?.avatar_url}
                           alt={rating.user?.name}
                           sx={{ width: 32, height: 32 }}
                         />
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600 }}
+                        >
                           {rating.user?.name}
                         </Typography>
                       </Box>

@@ -50,7 +50,7 @@ import { supabaseServer } from "@lib/supabase";
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
+  [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(3),
     marginBottom: theme.spacing(3),
   },
@@ -75,7 +75,7 @@ interface User {
   email: string;
   name: string;
   avatar_url?: string;
-  role: 'USER' | 'ADMIN';
+  role: "USER" | "ADMIN";
   created_at: string;
 }
 
@@ -85,7 +85,14 @@ interface SeasonManagerProps {
 
 export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   const theme = useTheme();
-  const { seasons, loading: seasonsLoading, error: seasonsError, loadData, saveSeason, deleteSeason } = useSeasons();
+  const {
+    seasons,
+    loading: seasonsLoading,
+    error: seasonsError,
+    loadData,
+    saveSeason,
+    deleteSeason,
+  } = useSeasons();
   const isAdmin = useIsAdmin();
   const { handleError, handleSuccess } = useErrorHandler();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -124,10 +131,12 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
   useEffect(() => {
     if (users.length > 0 && weeks.length > 0 && weeks[0].userId === null) {
-      setWeeks(prevWeeks => prevWeeks.map(week => ({
-        ...week,
-        userId: users[0].id
-      })));
+      setWeeks((prevWeeks) =>
+        prevWeeks.map((week) => ({
+          ...week,
+          userId: users[0].id,
+        }))
+      );
     }
   }, [users]);
 
@@ -139,13 +148,15 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       setParticipantCount(season.participant_count);
       setIsActive(season.is_active);
       if (season.weeks) {
-        setWeeks(season.weeks.map((week) => ({
-          description: week.description,
-          startDate: new Date(week.start_date),
-          endDate: new Date(week.end_date),
-          userId: week.user_id || null,
-          isActive: week.is_active,
-        })));
+        setWeeks(
+          season.weeks.map((week) => ({
+            description: week.description,
+            startDate: new Date(week.start_date),
+            endDate: new Date(week.end_date),
+            userId: week.user_id || null,
+            isActive: week.is_active,
+          }))
+        );
       }
     } else {
       setIsEditing(false);
@@ -197,23 +208,25 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTheme(e.target.value);
-    setFormErrors(prev => ({ ...prev, theme: undefined }));
+    setFormErrors((prev) => ({ ...prev, theme: undefined }));
   };
 
   const handleParticipantCountChange = (value: number) => {
     setParticipantCount(value);
-    setFormErrors(prev => ({ ...prev, participantCount: undefined }));
+    setFormErrors((prev) => ({ ...prev, participantCount: undefined }));
     // Update weeks array based on participant count
     const currentWeeks = weeks.length;
     if (value > currentWeeks) {
       // Add new weeks
-      const newWeeks = Array(value - currentWeeks).fill(null).map(() => ({
-        description: "",
-        startDate: new Date(),
-        endDate: new Date(),
-        userId: null,
-        isActive: true,
-      }));
+      const newWeeks = Array(value - currentWeeks)
+        .fill(null)
+        .map(() => ({
+          description: "",
+          startDate: new Date(),
+          endDate: new Date(),
+          userId: null,
+          isActive: true,
+        }));
       setWeeks([...weeks, ...newWeeks]);
     } else if (value < currentWeeks) {
       // Remove excess weeks
@@ -240,20 +253,24 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
     setWeeks(weeks.filter((_, i) => i !== index));
   };
 
-  const handleWeekChange = (index: number, field: keyof WeekFormData, value: any) => {
+  const handleWeekChange = (
+    index: number,
+    field: keyof WeekFormData,
+    value: any
+  ) => {
     const newWeeks = [...weeks];
     newWeeks[index] = { ...newWeeks[index], [field]: value };
     setWeeks(newWeeks);
 
-    setFormErrors(prev => {
+    setFormErrors((prev) => {
       const newErrors = { ...prev };
       if (newErrors.weeks?.[index]) {
         newErrors.weeks[index] = {
           ...newErrors.weeks[index],
           errors: {
             ...newErrors.weeks[index].errors,
-            [field]: undefined
-          }
+            [field]: undefined,
+          },
         };
       }
       return newErrors;
@@ -264,52 +281,80 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
     let isValid = true;
     const errors: typeof formErrors = {};
 
+    console.log("Validating form with values:", {
+      theme: seasonTheme,
+      participantCount,
+      weeks,
+      isEditing,
+    });
+
     if (!seasonTheme.trim()) {
       errors.theme = "Le thème est requis";
       isValid = false;
+      console.log("Theme validation failed: empty");
     } else if (seasonTheme.length < 3) {
       errors.theme = "Le thème doit contenir au moins 3 caractères";
       isValid = false;
+      console.log("Theme validation failed: too short");
     }
 
     if (participantCount < 1) {
-      errors.participantCount = "Le nombre de participants doit être au moins 1";
+      errors.participantCount =
+        "Le nombre de participants doit être au moins 1";
       isValid = false;
+      console.log("Participant count validation failed");
     }
 
-    const weekErrors = weeks.map((week) => {
-      const weekError: WeekFormData['errors'] = {};
+    // Ne valider les semaines que lors de la création d'une nouvelle saison
+    if (!isEditing) {
+      const weekErrors = weeks.map((week, index) => {
+        const weekError: WeekFormData["errors"] = {};
 
-      if (!week.description.trim()) {
-        weekError.description = "La description est requise";
-        isValid = false;
+        if (!week.description.trim()) {
+          weekError.description = "La description est requise";
+          isValid = false;
+          console.log(`Week ${index + 1} validation failed: empty description`);
+        }
+
+        if (!week.startDate) {
+          weekError.startDate = "La date de début est requise";
+          isValid = false;
+          console.log(
+            `Week ${index + 1} validation failed: missing start date`
+          );
+        }
+
+        if (!week.endDate) {
+          weekError.endDate = "La date de fin est requise";
+          isValid = false;
+          console.log(`Week ${index + 1} validation failed: missing end date`);
+        }
+
+        if (week.startDate && week.endDate && week.startDate > week.endDate) {
+          weekError.endDate =
+            "La date de fin doit être postérieure à la date de début";
+          isValid = false;
+          console.log(
+            `Week ${index + 1} validation failed: end date before start date`
+          );
+        }
+
+        if (!week.userId) {
+          weekError.userId = "Un participant doit être sélectionné";
+          isValid = false;
+          console.log(
+            `Week ${index + 1} validation failed: no participant selected`
+          );
+        }
+
+        return { ...week, errors: weekError };
+      });
+
+      if (
+        weekErrors.some((week) => Object.keys(week.errors || {}).length > 0)
+      ) {
+        errors.weeks = weekErrors;
       }
-
-      if (!week.startDate) {
-        weekError.startDate = "La date de début est requise";
-        isValid = false;
-      }
-
-      if (!week.endDate) {
-        weekError.endDate = "La date de fin est requise";
-        isValid = false;
-      }
-
-      if (week.startDate && week.endDate && week.startDate > week.endDate) {
-        weekError.endDate = "La date de fin doit être postérieure à la date de début";
-        isValid = false;
-      }
-
-      if (!week.userId) {
-        weekError.userId = "Un participant doit être sélectionné";
-        isValid = false;
-      }
-
-      return { ...week, errors: weekError };
-    });
-
-    if (weekErrors.some(week => Object.keys(week.errors || {}).length > 0)) {
-      errors.weeks = weekErrors;
     }
 
     setFormErrors(errors);
@@ -317,7 +362,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
   };
 
   const handleSubmit = async () => {
+    console.log("handleSubmit called");
     if (!validateForm()) {
+      console.log("Form validation failed");
       return;
     }
 
@@ -389,12 +436,16 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             justifyContent: "space-between",
             alignItems: "center",
             mb: 2,
-            [theme.breakpoints.up('sm')]: {
+            [theme.breakpoints.up("sm")]: {
               mb: 4,
             },
           }}
         >
-          <Typography variant="h5" component="h1" sx={{ [theme.breakpoints.up('sm')]: { variant: "h4" } }}>
+          <Typography
+            variant="h5"
+            component="h1"
+            sx={{ [theme.breakpoints.up("sm")]: { variant: "h4" } }}
+          >
             Gestion des saisons
           </Typography>
           <Button
@@ -403,9 +454,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             onClick={() => handleOpenDialog()}
             size="small"
             sx={{
-              [theme.breakpoints.up('sm')]: {
-                size: "medium"
-              }
+              [theme.breakpoints.up("sm")]: {
+                size: "medium",
+              },
             }}
           >
             Ajouter une saison
@@ -413,13 +464,19 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
         </Box>
 
         {seasonsError && (
-          <Alert severity="error" sx={{ mb: 2, [theme.breakpoints.up('sm')]: { mb: 3 } }}>
+          <Alert
+            severity="error"
+            sx={{ mb: 2, [theme.breakpoints.up("sm")]: { mb: 3 } }}
+          >
             {seasonsError}
           </Alert>
         )}
 
         {success && (
-          <Alert severity="success" sx={{ mb: 2, [theme.breakpoints.up('sm')]: { mb: 3 } }}>
+          <Alert
+            severity="success"
+            sx={{ mb: 2, [theme.breakpoints.up("sm")]: { mb: 3 } }}
+          >
             {success}
           </Alert>
         )}
@@ -430,7 +487,13 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
               <CircularProgress />
             </Box>
           ) : !seasons.length ? (
-            <Box sx={{ textAlign: "center", py: 2, [theme.breakpoints.up('sm')]: { py: 4 } }}>
+            <Box
+              sx={{
+                textAlign: "center",
+                py: 2,
+                [theme.breakpoints.up("sm")]: { py: 4 },
+              }}
+            >
               <Typography variant="h6" color="text.secondary" gutterBottom>
                 Aucune saison n'a été créée
               </Typography>
@@ -443,9 +506,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                 onClick={() => handleOpenDialog()}
                 size="small"
                 sx={{
-                  [theme.breakpoints.up('sm')]: {
-                    size: "medium"
-                  }
+                  [theme.breakpoints.up("sm")]: {
+                    size: "medium",
+                  },
                 }}
               >
                 Créer une saison
@@ -453,7 +516,10 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             </Box>
           ) : (
             <TableContainer>
-              <Table size="small" sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}>
+              <Table
+                size="small"
+                sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell>Thème</TableCell>
@@ -487,7 +553,11 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                             <IconButton
                               size="small"
                               color="primary"
-                              onClick={() => handleOpenDialog(season as Season & { weeks?: Week[] })}
+                              onClick={() =>
+                                handleOpenDialog(
+                                  season as Season & { weeks?: Week[] }
+                                )
+                              }
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -522,7 +592,10 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           {isEditing ? "Modifier la saison" : "Ajouter une saison"}
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1, [theme.breakpoints.up('sm')]: { spacing: 3 } }}>
+          <Stack
+            spacing={2}
+            sx={{ mt: 1, [theme.breakpoints.up("sm")]: { spacing: 3 } }}
+          >
             <TextField
               label="Thème"
               fullWidth
@@ -532,7 +605,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
               error={!!formErrors.theme}
               required
               size="small"
-              sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+              sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
             />
 
             <TextField
@@ -540,13 +613,15 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
               type="number"
               fullWidth
               value={participantCount}
-              onChange={(e) => handleParticipantCountChange(parseInt(e.target.value))}
+              onChange={(e) =>
+                handleParticipantCountChange(parseInt(e.target.value))
+              }
               inputProps={{ min: 1 }}
               helperText={formErrors.participantCount}
               error={!!formErrors.participantCount}
               required
               size="small"
-              sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+              sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
             />
 
             <FormControlLabel
@@ -556,7 +631,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                   onChange={(e) => setIsActive(e.target.checked)}
                   color="primary"
                   size="small"
-                  sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+                  sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
                 />
               }
               label="Saison active"
@@ -564,13 +639,32 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
 
             {!isEditing && (
               <>
-                <Typography variant="h6" sx={{ mt: 1, [theme.breakpoints.up('sm')]: { mt: 2 } }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mt: 1, [theme.breakpoints.up("sm")]: { mt: 2 } }}
+                >
                   Semaines
                 </Typography>
                 {weeks.map((week, index) => (
-                  <Paper key={index} sx={{ p: 1, mb: 1, [theme.breakpoints.up('sm')]: { p: 2, mb: 2 } }}>
-                    <Stack spacing={2} sx={{ [theme.breakpoints.up('sm')]: { spacing: 2 } }}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Paper
+                    key={index}
+                    sx={{
+                      p: 1,
+                      mb: 1,
+                      [theme.breakpoints.up("sm")]: { p: 2, mb: 2 },
+                    }}
+                  >
+                    <Stack
+                      spacing={2}
+                      sx={{ [theme.breakpoints.up("sm")]: { spacing: 2 } }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
                         <Typography variant="subtitle1">
                           Semaine {index + 1}
                         </Typography>
@@ -591,45 +685,79 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                         multiline
                         rows={2}
                         value={week.description}
-                        onChange={(e) => handleWeekChange(index, "description", e.target.value)}
+                        onChange={(e) =>
+                          handleWeekChange(index, "description", e.target.value)
+                        }
                         error={!!formErrors.weeks?.[index]?.errors?.description}
-                        helperText={formErrors.weeks?.[index]?.errors?.description}
+                        helperText={
+                          formErrors.weeks?.[index]?.errors?.description
+                        }
                         size="small"
-                        sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+                        sx={{
+                          [theme.breakpoints.up("sm")]: { size: "medium" },
+                        }}
                       />
 
-                      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-                        <Box sx={{ display: "flex", gap: 1, [theme.breakpoints.up('sm')]: { gap: 2 } }}>
+                      <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        adapterLocale={fr}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            [theme.breakpoints.up("sm")]: { gap: 2 },
+                          }}
+                        >
                           <Box sx={{ flex: 1 }}>
                             <DatePicker
                               label="Date de début"
                               value={week.startDate}
-                              onChange={(date) => handleWeekChange(index, "startDate", date)}
+                              onChange={(date) =>
+                                handleWeekChange(index, "startDate", date)
+                              }
                               format="dd/MM/yyyy"
                               slotProps={{
                                 textField: {
                                   fullWidth: true,
                                   size: "small",
-                                  error: !!formErrors.weeks?.[index]?.errors?.startDate,
-                                  helperText: formErrors.weeks?.[index]?.errors?.startDate
+                                  error:
+                                    !!formErrors.weeks?.[index]?.errors
+                                      ?.startDate,
+                                  helperText:
+                                    formErrors.weeks?.[index]?.errors
+                                      ?.startDate,
                                 },
                               }}
                             />
                           </Box>
                           <Box sx={{ flex: 1 }}>
-                            <Tooltip title={`La date de fin doit être postérieure au ${week.startDate.toLocaleDateString('fr-FR')}`}>
+                            <Tooltip
+                              title={`La date de fin doit être postérieure au ${week.startDate.toLocaleDateString(
+                                "fr-FR"
+                              )}`}
+                            >
                               <DatePicker
                                 label="Date de fin"
                                 value={week.endDate}
-                                onChange={(date) => handleWeekChange(index, "endDate", date)}
+                                onChange={(date) =>
+                                  handleWeekChange(index, "endDate", date)
+                                }
                                 format="dd/MM/yyyy"
                                 minDate={week.startDate}
                                 slotProps={{
                                   textField: {
                                     fullWidth: true,
                                     size: "small",
-                                    error: !!formErrors.weeks?.[index]?.errors?.endDate,
-                                    helperText: formErrors.weeks?.[index]?.errors?.endDate || `Après le ${week.startDate.toLocaleDateString('fr-FR')}`
+                                    error:
+                                      !!formErrors.weeks?.[index]?.errors
+                                        ?.endDate,
+                                    helperText:
+                                      formErrors.weeks?.[index]?.errors
+                                        ?.endDate ||
+                                      `Après le ${week.startDate.toLocaleDateString(
+                                        "fr-FR"
+                                      )}`,
                                   },
                                 }}
                               />
@@ -642,7 +770,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                         fullWidth
                         size="small"
                         error={!!formErrors.weeks?.[index]?.errors?.userId}
-                        sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+                        sx={{
+                          [theme.breakpoints.up("sm")]: { size: "medium" },
+                        }}
                       >
                         <InputLabel id={`user-select-label-${index}`}>
                           Participant
@@ -650,10 +780,14 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                         <Select
                           labelId={`user-select-label-${index}`}
                           value={week.userId || ""}
-                          onChange={(e) => handleWeekChange(index, "userId", e.target.value)}
+                          onChange={(e) =>
+                            handleWeekChange(index, "userId", e.target.value)
+                          }
                           label="Participant"
                           size="small"
-                          sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+                          sx={{
+                            [theme.breakpoints.up("sm")]: { size: "medium" },
+                          }}
                         >
                           <MenuItem value="">
                             <em>Aucun</em>
@@ -675,10 +809,18 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                         control={
                           <Switch
                             checked={week.isActive}
-                            onChange={(e) => handleWeekChange(index, "isActive", e.target.checked)}
+                            onChange={(e) =>
+                              handleWeekChange(
+                                index,
+                                "isActive",
+                                e.target.checked
+                              )
+                            }
                             color="primary"
                             size="small"
-                            sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+                            sx={{
+                              [theme.breakpoints.up("sm")]: { size: "medium" },
+                            }}
                           />
                         }
                         label="Semaine active"
@@ -695,10 +837,10 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
                   size="small"
                   sx={{
                     mt: 1,
-                    [theme.breakpoints.up('sm')]: {
+                    [theme.breakpoints.up("sm")]: {
                       mt: 2,
-                      size: "medium"
-                    }
+                      size: "medium",
+                    },
                   }}
                 >
                   Ajouter une semaine
@@ -708,7 +850,12 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} startIcon={<CloseIcon />} size="small" sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}>
+          <Button
+            onClick={handleCloseDialog}
+            startIcon={<CloseIcon />}
+            size="small"
+            sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
+          >
             Annuler
           </Button>
           <Button
@@ -718,7 +865,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             startIcon={<CheckIcon />}
             disabled={loading}
             size="small"
-            sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+            sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
           >
             {loading ? "Enregistrement..." : "Enregistrer"}
           </Button>
@@ -739,7 +886,12 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} startIcon={<CloseIcon />} size="small" sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            startIcon={<CloseIcon />}
+            size="small"
+            sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
+          >
             Annuler
           </Button>
           <Button
@@ -749,7 +901,7 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
             startIcon={<DeleteIcon />}
             disabled={loading}
             size="small"
-            sx={{ [theme.breakpoints.up('sm')]: { size: "medium" } }}
+            sx={{ [theme.breakpoints.up("sm")]: { size: "medium" } }}
           >
             {loading ? "Suppression..." : "Supprimer"}
           </Button>

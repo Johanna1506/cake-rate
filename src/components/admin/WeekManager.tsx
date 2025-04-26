@@ -208,12 +208,14 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
     }
 
     if (startDate && endDate && startDate > endDate) {
-      errors.endDate = "La date de fin doit être postérieure à la date de début";
+      errors.endDate =
+        "La date de fin doit être postérieure à la date de début";
       isValid = false;
     }
 
     if (isActive && !selectedUserId) {
-      errors.userId = "Un participant doit être sélectionné pour une semaine active";
+      errors.userId =
+        "Un participant doit être sélectionné pour une semaine active";
       isValid = false;
     }
 
@@ -242,6 +244,18 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
         season_id: selectedSeasonId,
       };
 
+      // Si on active une semaine, désactiver les autres semaines actives de la même saison
+      if (isActive) {
+        const { error: deactivateError } = await supabaseServer
+          .from("weeks")
+          .update({ is_active: false })
+          .eq("season_id", selectedSeasonId)
+          .eq("is_active", true)
+          .neq("id", currentWeek?.id || ""); // Ne pas désactiver la semaine qu'on est en train de modifier
+
+        if (deactivateError) throw deactivateError;
+      }
+
       if (currentWeek) {
         const { error } = await supabaseServer
           .from("weeks")
@@ -251,9 +265,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
         if (error) throw error;
         handleSuccess("Semaine mise à jour avec succès");
       } else {
-        const { error } = await supabaseServer
-          .from("weeks")
-          .insert(weekData);
+        const { error } = await supabaseServer.from("weeks").insert(weekData);
 
         if (error) throw error;
         handleSuccess("Semaine créée avec succès");
@@ -262,7 +274,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       handleCloseDialog();
       await fetchWeeks();
       // Invalider le cache de la saison courante
-      await queryClient.invalidateQueries({ queryKey: ['currentSeason'] });
+      await queryClient.invalidateQueries({ queryKey: ["currentSeason"] });
     } catch (err) {
       handleError(err);
     } finally {
@@ -286,7 +298,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       handleCloseDeleteDialog();
       await fetchWeeks();
       // Invalider le cache de la saison courante
-      await queryClient.invalidateQueries({ queryKey: ['currentSeason'] });
+      await queryClient.invalidateQueries({ queryKey: ["currentSeason"] });
     } catch (err) {
       handleError(err);
     } finally {
@@ -490,7 +502,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
               >
                 {selectedSeasonId && (
                   <MenuItem value={selectedSeasonId}>
-                    {seasons.find(s => s.id === selectedSeasonId)?.theme}
+                    {seasons.find((s) => s.id === selectedSeasonId)?.theme}
                   </MenuItem>
                 )}
               </Select>
@@ -499,7 +511,9 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
             <TextField
               label="Thème"
               fullWidth
-              value={seasons.find(s => s.id === selectedSeasonId)?.theme || ""}
+              value={
+                seasons.find((s) => s.id === selectedSeasonId)?.theme || ""
+              }
               disabled
             />
 
@@ -604,10 +618,7 @@ export function WeekManager({ isTabActive }: WeekManagerProps) {
       </Dialog>
 
       {/* Dialogue de confirmation de suppression */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-      >
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
         <DialogTitle>Confirmer la suppression</DialogTitle>
         <DialogContent>
           <DialogContentText>
