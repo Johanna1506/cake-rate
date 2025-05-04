@@ -21,11 +21,26 @@ export function useSeasons() {
     try {
       const { data, error } = await supabaseServer
         .from("seasons")
-        .select("*")
+        .select(
+          `
+          *,
+          winner:user_achievements(
+            user:users(id, name, avatar_url)
+          ),
+          weeks:weeks(*)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setSeasons(data || []);
+
+      // Transformer les données pour avoir une structure plus simple
+      const transformedData = (data || []).map((season) => ({
+        ...season,
+        winner: season.winner?.[0]?.user,
+      }));
+
+      setSeasons(transformedData);
       setHasSeasons(!!data && data.length > 0);
     } catch (err) {
       console.error("Erreur lors du chargement des saisons:", err);
@@ -65,17 +80,6 @@ export function useSeasons() {
       setSuccess(null);
       setLoading(true);
 
-      // Si on active une nouvelle saison, désactiver la saison active existante
-      if (seasonData.is_active) {
-        const { error: deactivateError } = await supabaseServer
-          .from("seasons")
-          .update({ is_active: false })
-          .eq("is_active", true)
-          .neq("id", seasonId || ""); // Ne pas désactiver la saison qu'on est en train de modifier
-
-        if (deactivateError) throw deactivateError;
-      }
-
       let response;
       if (seasonId) {
         response = await supabaseServer
@@ -84,6 +88,7 @@ export function useSeasons() {
           .eq("id", seasonId);
       } else {
         // Créer la saison
+        console.log(seasonData);
         const { data: season, error: seasonError } = await supabaseServer
           .from("seasons")
           .insert([seasonData])
@@ -114,23 +119,15 @@ export function useSeasons() {
             user_id: null,
           }));
 
-        console.log("Creating weeks:", weeksToCreate); // Debug log
-
         const { data: createdWeeks, error: weeksError } = await supabaseServer
           .from("weeks")
           .insert(weeksToCreate)
           .select();
 
-        if (weeksError) {
-          console.error("Error creating weeks:", weeksError);
-          throw weeksError;
-        }
-
+        if (weeksError) throw weeksError;
         if (!createdWeeks || createdWeeks.length === 0) {
           throw new Error("La création des semaines a échoué");
         }
-
-        console.log("Created weeks:", createdWeeks); // Debug log
 
         response = { data: season, error: null };
       }

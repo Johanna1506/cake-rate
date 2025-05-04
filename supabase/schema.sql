@@ -54,12 +54,31 @@ CREATE TABLE public.ratings (
     UNIQUE(cake_id, user_id) -- Ensure one rating per user per cake
 );
 
+-- Create user_achievements table
+CREATE TABLE public.user_achievements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    achievement_type TEXT NOT NULL,
+    season_id UUID NOT NULL REFERENCES public.seasons(id) ON DELETE CASCADE,
+    achieved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
 -- Enable RLS
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weeks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seasons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cakes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
+
+-- Grant permissions to service_role
+GRANT ALL ON public.users TO service_role;
+GRANT ALL ON public.weeks TO service_role;
+GRANT ALL ON public.seasons TO service_role;
+GRANT ALL ON public.cakes TO service_role;
+GRANT ALL ON public.ratings TO service_role;
+GRANT ALL ON public.user_achievements TO service_role;
 
 -- Users policies
 CREATE POLICY "Users can view all users"
@@ -121,6 +140,17 @@ CREATE POLICY "Users can update their own ratings"
     ON public.ratings FOR UPDATE
     USING (auth.uid() = user_id);
 
+-- User achievements policies
+CREATE POLICY "Users can view all achievements"
+    ON public.user_achievements FOR SELECT
+    USING (true);
+
+CREATE POLICY "Only admins can create/update achievements"
+    ON public.user_achievements FOR ALL
+    USING (auth.uid() IN (
+        SELECT id FROM public.users WHERE role = 'ADMIN'
+    ));
+
 -- Create function to handle new user creation
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
 RETURNS trigger AS $$
@@ -162,11 +192,71 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create the trigger
+-- Create function to assign season winner
+CREATE OR REPLACE FUNCTION public.assign_season_winner(season_id UUID)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    winner_id UUID;
+BEGIN
+    -- Calculate average scores for each user in the season
+    WITH user_scores AS (
+        SELECT
+            c.user_id,
+            AVG((r.appearance + r.taste + r.theme_adherence) / 3.0) as avg_score,
+            COUNT(DISTINCT c.id) as cake_count
+        FROM public.cakes c
+        JOIN public.ratings r ON c.id = r.cake_id
+        JOIN public.weeks w ON c.week_id = w.id
+        WHERE w.season_id = assign_season_winner.season_id
+        GROUP BY c.user_id
+        HAVING COUNT(DISTINCT c.id) >= 1  -- At least one cake submitted
+    )
+    SELECT user_id INTO winner_id
+    FROM user_scores
+    ORDER BY avg_score DESC, cake_count DESC
+    LIMIT 1;
+
+    -- If we found a winner and they don't already have the achievement
+    IF winner_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM public.user_achievements
+        WHERE user_id = winner_id
+        AND achievement_type = 'season_winner'
+        AND season_id = assign_season_winner.season_id
+    ) THEN
+        -- Insert the achievement
+        INSERT INTO public.user_achievements (user_id, achievement_type, season_id)
+        VALUES (winner_id, 'season_winner', assign_season_winner.season_id);
+    END IF;
+END;
+$$;
+
+-- Create trigger to automatically assign winner when season is marked as inactive
+CREATE OR REPLACE FUNCTION public.handle_season_end()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    IF OLD.is_active = true AND NEW.is_active = false THEN
+        PERFORM public.assign_season_winner(NEW.id);
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+-- Create the triggers
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
+CREATE TRIGGER on_season_end
+    AFTER UPDATE ON public.seasons
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_season_end();
 
 SELECT * FROM public.users;
 SELECT * FROM public.weeks;

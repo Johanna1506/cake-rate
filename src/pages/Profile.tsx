@@ -5,6 +5,7 @@ import {
   useSession,
   useUpdatePassword,
 } from "@hooks/useAuthQuery";
+import { useUserAchievements } from "@hooks/useAchievements";
 import { uploadAvatar } from "@services/storage";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useParams } from "react-router-dom";
@@ -21,6 +22,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ChangeEvent, FormEvent } from "react";
+import { AchievementList } from "@components/AchievementList";
 
 const AVATAR_MAX_SIZE_MB = 0.5;
 const AVATAR_MAX_SIZE_BYTES = AVATAR_MAX_SIZE_MB * 1024 * 1024;
@@ -36,7 +38,13 @@ const StyledContainer = styled(Container)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  padding: theme.spacing(4),
+  padding: theme.spacing(2),
+  [theme.breakpoints.up("sm")]: {
+    padding: theme.spacing(3),
+  },
+  [theme.breakpoints.up("md")]: {
+    padding: theme.spacing(4),
+  },
 })) as typeof Container;
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -91,6 +99,7 @@ export function Profile() {
   const userId = urlUserId || currentUserId;
   const isOwnProfile = userId === currentUserId;
   const { data: userDetails, isLoading, error } = useUserDetails(userId || "");
+  const { data: achievements } = useUserAchievements(userId);
   const updateUser = useUpdateUser();
   const updatePassword = useUpdatePassword();
   const { handleError, handleSuccess } = useErrorHandler();
@@ -293,6 +302,15 @@ export function Profile() {
                   <Typography variant="body1">{userDetails?.role}</Typography>
                 </InfoRow>
               </InfoContainer>
+
+              {achievements && achievements.length > 0 && (
+                <AchievementList
+                  achievements={achievements}
+                  title="🏆 Récompenses"
+                  showSeason={true}
+                  variant="full"
+                />
+              )}
 
               {isOwnProfile && (
                 <Box

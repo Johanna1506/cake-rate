@@ -28,10 +28,11 @@ import { FeatureCard } from "@components/FeatureCard";
 import { HeroSection } from "@components/HeroSection";
 import { AppPreview } from "@components/AppPreview";
 import { ComingSoonSection } from "@components/ComingSoonSection";
+import { SeasonRewards } from "@components/SeasonRewards";
 
 export function Home() {
   const queryClient = useQueryClient();
-  const { data: season, isLoading: isLoadingSeason } = useCurrentSeason();
+  const { data: seasonsData, isLoading: isLoadingSeason } = useCurrentSeason();
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { data: session } = useSession();
@@ -46,8 +47,8 @@ export function Home() {
       </Container>
     );
   }
-  console.log(season);
-  if (!season) {
+
+  if (!seasonsData?.currentSeason && !seasonsData?.lastCompletedSeason) {
     return (
       <Container maxWidth="lg">
         <Box
@@ -95,7 +96,13 @@ export function Home() {
     );
   }
 
-  if (!season.weeks || season.weeks.length === 0) {
+  const currentSeason = seasonsData?.currentSeason;
+  const lastCompletedSeason = seasonsData?.lastCompletedSeason;
+
+  if (
+    currentSeason &&
+    (!currentSeason.weeks || currentSeason.weeks.length === 0)
+  ) {
     return (
       <Container maxWidth="md">
         <Alert
@@ -127,168 +134,215 @@ export function Home() {
             alt="Saison en préparation"
             style={{ width: "48px", height: "48px" }}
           />
-          La saison "{season.theme}" est en cours de préparation. Les semaines
-          seront bientôt disponibles.
+          La saison "{currentSeason.theme}" est en cours de préparation. Les
+          semaines seront bientôt disponibles.
         </Alert>
       </Container>
     );
   }
 
   // Trier les semaines : active d'abord, puis par date de création
-  const sortedWeeks = [...season.weeks].sort((a, b) => {
-    if (a.is_active && !b.is_active) return -1;
-    if (!a.is_active && b.is_active) return 1;
-    return (
-      new Date(b.created_at || 0).getTime() -
-      new Date(a.created_at || 0).getTime()
-    );
-  });
+  const sortedWeeks = currentSeason?.weeks
+    ? [...currentSeason.weeks].sort((a, b) => {
+        if (a.is_active && !b.is_active) return -1;
+        if (!a.is_active && b.is_active) return 1;
+        return (
+          new Date(b.created_at || 0).getTime() -
+          new Date(a.created_at || 0).getTime()
+        );
+      })
+    : [];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-            {season.theme}
-          </Typography>
-
-          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-            <Chip
-              label={`${season.participant_count} participants`}
-              size="small"
-            />
-            <Chip label={`${season.weeks.length} semaines`} size="small" />
-          </Stack>
-
-          <Typography variant="body1" color="text.secondary">
-            Participez à cette saison de pâtisserie en réalisant des gâteaux sur
-            le thème "{season.theme}". Chaque semaine, un participant différent
-            sera sélectionné pour présenter sa création.
-          </Typography>
-        </CardContent>
-      </Card>
-
-      {/* Section Semaine en cours */}
-      {sortedWeeks.some((week) => week.is_active) && (
+      {/* Section de la dernière saison terminée */}
+      {lastCompletedSeason && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
-            Semaine en cours
+            🏆 Dernière saison terminée
           </Typography>
-          <Stack spacing={2}>
-            {sortedWeeks
-              .filter((week) => week.is_active)
-              .map((week) => (
-                <ActiveWeekCard
-                  key={week.id}
-                  week={week}
-                  currentUser={currentUser}
-                  onAddCake={(weekId) => {
-                    setSelectedWeek(weekId);
-                    setShowUploadModal(true);
-                  }}
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
+                {lastCompletedSeason.theme}
+              </Typography>
+
+              <Stack direction="row" sx={{ mb: 2, flexWrap: "wrap", gap: 1 }}>
+                <Chip
+                  label={`${lastCompletedSeason.participant_count} participants`}
+                  size="small"
                 />
-              ))}
-          </Stack>
+                <Chip
+                  label={`${lastCompletedSeason.weeks?.length || 0} semaines`}
+                  size="small"
+                />
+                <Chip label="Saison terminée" size="small" color="success" />
+              </Stack>
+
+              {lastCompletedSeason.achievements && (
+                <SeasonRewards season={lastCompletedSeason} />
+              )}
+            </CardContent>
+          </Card>
         </Box>
       )}
 
-      {/* Section Semaines à venir */}
-      {sortedWeeks.some((week) => !week.is_active) && (
-        <Box>
-          <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
-            Semaines à venir
-          </Typography>
-          <Stack spacing={2}>
-            {sortedWeeks
-              .filter((week) => !week.is_active)
-              .map((week) => (
-                <Card
-                  key={week.id}
-                  sx={{
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      boxShadow: 3,
-                    },
-                  }}
-                >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box
+      {/* Section de la saison en cours */}
+      {currentSeason && (
+        <>
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
+                {currentSeason.theme}
+              </Typography>
+
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <Chip
+                  label={`${currentSeason.participant_count} participants`}
+                  size="small"
+                />
+                <Chip
+                  label={`${currentSeason.weeks?.length || 0} semaines`}
+                  size="small"
+                />
+              </Stack>
+
+              <Typography variant="body1" color="text.secondary">
+                Participez à cette saison de pâtisserie en réalisant des gâteaux
+                sur le thème "{currentSeason.theme}". Chaque semaine, un
+                participant différent sera sélectionné pour présenter sa
+                création.
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Section Semaine en cours */}
+          {sortedWeeks.some((week) => week.is_active) && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
+                Semaine en cours
+              </Typography>
+              <Stack spacing={2}>
+                {sortedWeeks
+                  .filter((week) => week.is_active)
+                  .map((week) => (
+                    <ActiveWeekCard
+                      key={week.id}
+                      week={week}
+                      currentUser={currentUser}
+                      onAddCake={(weekId) => {
+                        setSelectedWeek(weekId);
+                        setShowUploadModal(true);
+                      }}
+                    />
+                  ))}
+              </Stack>
+            </Box>
+          )}
+
+          {/* Section Semaines à venir */}
+          {sortedWeeks.some((week) => !week.is_active) && (
+            <Box>
+              <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
+                Semaines à venir
+              </Typography>
+              <Stack spacing={2}>
+                {sortedWeeks
+                  .filter((week) => !week.is_active)
+                  .map((week) => (
+                    <Card
+                      key={week.id}
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
+                        transition: "all 0.2s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          boxShadow: 3,
+                        },
                       }}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: 3,
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        {week.user && (
-                          <Avatar
-                            src={week.user.avatar_url}
-                            alt={week.user.name}
+                      <CardContent sx={{ p: 3 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <Box
                             sx={{
-                              width: 56,
-                              height: 56,
-                              border: "2px solid",
-                              borderColor: "primary.main",
+                              display: "flex",
+                              gap: 3,
+                              alignItems: "flex-start",
                             }}
                           >
-                            {week.user.name?.[0] || "U"}
-                          </Avatar>
-                        )}
-                        <Box>
-                          <Typography
-                            variant="h6"
-                            component="h2"
-                            sx={{
-                              mb: 1,
-                              fontWeight: 600,
-                              color: "text.primary",
-                            }}
-                          >
-                            {format(new Date(week.start_date), "dd MMMM", {
-                              locale: fr,
-                            })}{" "}
-                            -{" "}
-                            {format(new Date(week.end_date), "dd MMMM yyyy", {
-                              locale: fr,
-                            })}
-                          </Typography>
+                            {week.user && (
+                              <Avatar
+                                src={week.user.avatar_url}
+                                alt={week.user.name}
+                                sx={{
+                                  width: 56,
+                                  height: 56,
+                                  border: "2px solid",
+                                  borderColor: "primary.main",
+                                }}
+                              >
+                                {week.user.name?.[0] || "U"}
+                              </Avatar>
+                            )}
+                            <Box>
+                              <Typography
+                                variant="h6"
+                                component="h2"
+                                sx={{
+                                  mb: 1,
+                                  fontWeight: 600,
+                                  color: "text.primary",
+                                }}
+                              >
+                                {format(new Date(week.start_date), "dd MMMM", {
+                                  locale: fr,
+                                })}{" "}
+                                -{" "}
+                                {format(
+                                  new Date(week.end_date),
+                                  "dd MMMM yyyy",
+                                  {
+                                    locale: fr,
+                                  }
+                                )}
+                              </Typography>
 
-                          {week.user ? (
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                color: "text.secondary",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              Participant : {week.user.name}
-                            </Typography>
-                          ) : (
-                            <Typography
-                              variant="subtitle1"
-                              color="text.secondary"
-                              sx={{ fontStyle: "italic" }}
-                            >
-                              Aucun participant assigné
-                            </Typography>
-                          )}
+                              {week.user ? (
+                                <Typography
+                                  variant="subtitle1"
+                                  sx={{
+                                    color: "text.secondary",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  Participant : {week.user.name}
+                                </Typography>
+                              ) : (
+                                <Typography
+                                  variant="subtitle1"
+                                  color="text.secondary"
+                                  sx={{ fontStyle: "italic" }}
+                                >
+                                  Aucun participant assigné
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
                         </Box>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
-          </Stack>
-        </Box>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </Stack>
+            </Box>
+          )}
+        </>
       )}
 
       <Dialog

@@ -1,5 +1,20 @@
-import React, { useEffect } from 'react';
-import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, Skeleton, Paper, Rating, Button, Alert, Collapse } from "@mui/material";
+import React, { useEffect } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  CardMedia,
+  Grid,
+  Skeleton,
+  Paper,
+  Rating,
+  Button,
+  Alert,
+  Collapse,
+  Chip,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
 import { useQuery } from "@tanstack/react-query";
@@ -9,8 +24,9 @@ import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useErrorHandler } from "@hooks/useErrorHandler";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: "100%",
@@ -35,16 +51,16 @@ const RatingBox = styled(Box)(({ theme }) => ({
 }));
 
 const SeasonHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
   padding: theme.spacing(1.5, 2),
   backgroundColor: theme.palette.background.paper,
   borderLeft: `4px solid ${theme.palette.primary.main}`,
   marginTop: theme.spacing(3),
   marginBottom: theme.spacing(2),
-  cursor: 'pointer',
-  '&:hover': {
+  cursor: "pointer",
+  "&:hover": {
     backgroundColor: theme.palette.action.hover,
   },
 }));
@@ -74,12 +90,24 @@ interface CakeWithWeek extends Cake {
     name: string;
     avatar_url: string;
   };
+  is_winner?: boolean;
+  achievements?: Array<{
+    achievement_type: string;
+    season_id: string;
+  }>;
 }
 
-const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week }) => {
+const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({
+  cakeId,
+  week,
+}) => {
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
-  const { data: ratings, isLoading, error } = useQuery({
+  const {
+    data: ratings,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["ratings", cakeId],
     queryFn: async () => {
       try {
@@ -172,10 +200,10 @@ const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week })
         onClick={() => navigate(`/cake-history/${cakeId}`)}
         sx={{
           mt: 2,
-          color: 'primary.main',
-          '&:hover': {
-            backgroundColor: 'rgba(25, 118, 210, 0.04)'
-          }
+          color: "primary.main",
+          "&:hover": {
+            backgroundColor: "rgba(25, 118, 210, 0.04)",
+          },
         }}
       >
         Voir les détails
@@ -187,8 +215,14 @@ const CakeRatings: React.FC<{ cakeId: string; week: Week }> = ({ cakeId, week })
 export function CakeHistory() {
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
-  const [openSeasons, setOpenSeasons] = React.useState<Record<string, boolean>>({});
-  const { data: cakes, isLoading, error } = useQuery<CakeWithWeek[]>({
+  const [openSeasons, setOpenSeasons] = React.useState<Record<string, boolean>>(
+    {}
+  );
+  const {
+    data: cakes,
+    isLoading,
+    error,
+  } = useQuery<CakeWithWeek[]>({
     queryKey: ["cakes"],
     queryFn: async () => {
       try {
@@ -201,13 +235,31 @@ export function CakeHistory() {
               *,
               season:seasons(*)
             ),
-            user:users(name, avatar_url)
+            user:users(
+              name,
+              avatar_url,
+              achievements:user_achievements(
+                achievement_type,
+                season_id
+              )
+            )
           `
           )
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        return data as CakeWithWeek[];
+
+        // Marquer les gâteaux gagnants
+        const cakesWithWinner = data.map((cake) => ({
+          ...cake,
+          is_winner: cake.user?.achievements?.some(
+            (achievement: { achievement_type: string; season_id: string }) =>
+              achievement.achievement_type === "season_winner" &&
+              achievement.season_id === cake.week.season?.id
+          ),
+        }));
+
+        return cakesWithWinner as CakeWithWeek[];
       } catch (err) {
         handleError(err);
         throw err;
@@ -219,7 +271,7 @@ export function CakeHistory() {
   useEffect(() => {
     if (cakes) {
       const initialSeasons = cakes.reduce((acc, cake) => {
-        const seasonName = cake.week.season?.theme || 'Sans saison';
+        const seasonName = cake.week.season?.theme || "Sans saison";
         acc[seasonName] = true;
         return acc;
       }, {} as Record<string, boolean>);
@@ -272,7 +324,7 @@ export function CakeHistory() {
 
   // Grouper les gâteaux par saison
   const cakesBySeason = cakes.reduce((acc, cake) => {
-    const seasonName = cake.week.season?.theme || 'Sans saison';
+    const seasonName = cake.week.season?.theme || "Sans saison";
     if (!acc[seasonName]) {
       acc[seasonName] = [];
     }
@@ -281,9 +333,9 @@ export function CakeHistory() {
   }, {} as Record<string, CakeWithWeek[]>);
 
   const toggleSeason = (seasonName: string) => {
-    setOpenSeasons(prev => ({
+    setOpenSeasons((prev) => ({
       ...prev,
-      [seasonName]: !prev[seasonName]
+      [seasonName]: !prev[seasonName],
     }));
   };
 
@@ -292,68 +344,120 @@ export function CakeHistory() {
       <Typography variant="h4" gutterBottom sx={{ mt: 4 }}>
         Historique des gâteaux
       </Typography>
-      {Object.entries(cakesBySeason).map(([seasonName, seasonCakes]) => (
-        <Box key={seasonName} sx={{ mb: 4 }}>
-          <SeasonHeader onClick={() => toggleSeason(seasonName)}>
-            <SeasonTitle variant="h6">
-              {seasonName}
-            </SeasonTitle>
-            {openSeasons[seasonName] ? <KeyboardArrowUpIcon color="primary" /> : <KeyboardArrowDownIcon color="primary" />}
-          </SeasonHeader>
-          <Collapse in={openSeasons[seasonName] ?? true}>
-            <GridContainer container spacing={2}>
-              {seasonCakes.map((cake: CakeWithWeek, index) => (
-                <Grid item xs={12} sm={6} md={4} key={cake.id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <StyledCard onClick={() => navigate(`/cake-history/${cake.id}`)}>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={cake.image_url}
-                        alt={cake.description}
-                        sx={{ objectFit: "cover" }}
-                      />
-                      <CardContent>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                          <Box
+      {Object.entries(cakesBySeason).map(([seasonName, seasonCakes]) => {
+        const season = seasonCakes[0]?.week.season;
+        const isSeasonEnded = season?.date_closed != null;
+
+        return (
+          <Box key={seasonName} sx={{ mb: 4 }}>
+            <SeasonHeader onClick={() => toggleSeason(seasonName)}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <SeasonTitle variant="h6">{seasonName}</SeasonTitle>
+                {isSeasonEnded && (
+                  <Chip
+                    label="Saison terminée"
+                    color="success"
+                    size="small"
+                    sx={{ fontWeight: 500 }}
+                  />
+                )}
+              </Box>
+              {openSeasons[seasonName] ? (
+                <KeyboardArrowUpIcon color="primary" />
+              ) : (
+                <KeyboardArrowDownIcon color="primary" />
+              )}
+            </SeasonHeader>
+            <Collapse in={openSeasons[seasonName] ?? true}>
+              <GridContainer container spacing={2}>
+                {seasonCakes.map((cake: CakeWithWeek, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={cake.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                    >
+                      <StyledCard
+                        onClick={() => navigate(`/cake-history/${cake.id}`)}
+                      >
+                        <Box sx={{ position: "relative" }}>
+                          <CardMedia
                             component="img"
-                            src={cake.user.avatar_url}
-                            alt={cake.user.name}
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: '50%',
-                              objectFit: 'cover'
-                            }}
+                            height="200"
+                            image={cake.image_url}
+                            alt={cake.description}
+                            sx={{ objectFit: "cover" }}
                           />
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" noWrap>
-                              {cake.user.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
-                                locale: fr,
-                              })}
-                            </Typography>
-                          </Box>
+                          {cake.is_winner && (
+                            <Chip
+                              icon={<EmojiEventsIcon />}
+                              label="Gagnant de la saison"
+                              color="primary"
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                fontWeight: 600,
+                                backgroundColor: "rgba(25, 118, 210, 0.9)",
+                                "& .MuiChip-icon": {
+                                  color: "white",
+                                },
+                              }}
+                            />
+                          )}
                         </Box>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {cake.description}
-                        </Typography>
-                        <CakeRatings cakeId={cake.id} week={cake.week} />
-                      </CardContent>
-                    </StyledCard>
-                  </motion.div>
-                </Grid>
-              ))}
-            </GridContainer>
-          </Collapse>
-        </Box>
-      ))}
+                        <CardContent>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                              mb: 2,
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={cake.user.avatar_url}
+                              alt={cake.user.name}
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                              }}
+                            />
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="h6" noWrap>
+                                {cake.user.name}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {format(
+                                  new Date(cake.week.start_date),
+                                  "dd MMMM yyyy",
+                                  {
+                                    locale: fr,
+                                  }
+                                )}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            {cake.description}
+                          </Typography>
+                          <CakeRatings cakeId={cake.id} week={cake.week} />
+                        </CardContent>
+                      </StyledCard>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </GridContainer>
+            </Collapse>
+          </Box>
+        );
+      })}
     </Container>
   );
 }
