@@ -10,7 +10,6 @@ import type { DeleteSeasonDialogProps } from "./types";
 
 export function DeleteSeasonDialog({
   open,
-  season,
   onClose,
   onConfirm,
 }: DeleteSeasonDialogProps) {

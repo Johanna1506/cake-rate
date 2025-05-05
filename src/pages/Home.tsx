@@ -29,6 +29,7 @@ import { HeroSection } from "@components/HeroSection";
 import { AppPreview } from "@components/AppPreview";
 import { ComingSoonSection } from "@components/ComingSoonSection";
 import { SeasonRewards } from "@components/SeasonRewards";
+import { User } from "../types";
 
 export function Home() {
   const queryClient = useQueryClient();
@@ -37,7 +38,7 @@ export function Home() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { data: session } = useSession();
   const { data: currentUser } = useUserDetails(session?.session?.user?.id);
-
+  console.log("seasonsData", seasonsData);
   if (isLoadingSeason) {
     return (
       <Container maxWidth="md">
@@ -152,7 +153,7 @@ export function Home() {
         );
       })
     : [];
-
+  console.log(sortedWeeks);
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Section de la dernière saison terminée */}
@@ -229,7 +230,16 @@ export function Home() {
                     <ActiveWeekCard
                       key={week.id}
                       week={week}
-                      currentUser={currentUser}
+                      currentUser={
+                        currentUser ||
+                        ({
+                          id: "",
+                          name: "",
+                          email: "",
+                          role: "USER",
+                          created_at: new Date().toISOString(),
+                        } as User)
+                      }
                       onAddCake={(weekId) => {
                         setSelectedWeek(weekId);
                         setShowUploadModal(true);

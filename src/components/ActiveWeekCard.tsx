@@ -15,12 +15,13 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Add as AddIcon, Close as CloseIcon } from "@mui/icons-material";
-import { Week } from "../types";
+import { Week, User } from "../types";
 import { CakeDetails } from "./CakeDetails";
 import { useNavigate } from "react-router-dom";
+
 interface ActiveWeekCardProps {
   week: Week;
-  currentUser: any;
+  currentUser: User;
   onAddCake: (weekId: string) => void;
 }
 

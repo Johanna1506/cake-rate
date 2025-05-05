@@ -19,7 +19,6 @@ import type { SeasonFormProps } from "./types";
 export function SeasonForm({
   open,
   isEditing,
-  season,
   seasonTheme,
   participantCount,
   isActive,

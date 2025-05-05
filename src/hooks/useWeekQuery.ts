@@ -56,7 +56,7 @@ export function useCurrentSeason() {
               *,
               user:users(id,name,email, avatar_url)
             ),
-            winner:user_achievements!inner(
+            winner:user_achievements(
               user:users(id, name, avatar_url)
             ),
             achievements:user_achievements(
