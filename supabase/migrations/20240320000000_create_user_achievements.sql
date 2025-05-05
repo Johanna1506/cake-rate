@@ -26,21 +26,48 @@ CREATE TABLE public.user_achievements (
 -- Enable RLS
 ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies
+DROP POLICY IF EXISTS "Users can view all achievements" ON public.user_achievements;
+DROP POLICY IF EXISTS "Only admins can create/update achievements" ON public.user_achievements;
+DROP POLICY IF EXISTS "Only admins can update achievements" ON public.user_achievements;
+DROP POLICY IF EXISTS "Only admins can delete achievements" ON public.user_achievements;
+
 -- Create policies
 CREATE POLICY "Users can view all achievements"
     ON public.user_achievements FOR SELECT
     USING (true);
 
 CREATE POLICY "Only admins can create/update achievements"
-    ON public.user_achievements FOR ALL
+    ON public.user_achievements FOR INSERT
+    WITH CHECK (auth.uid() IN (
+        SELECT id FROM public.users WHERE role = 'ADMIN'
+    ));
+
+CREATE POLICY "Only admins can update achievements"
+    ON public.user_achievements FOR UPDATE
     USING (auth.uid() IN (
         SELECT id FROM public.users WHERE role = 'ADMIN'
     ));
+
+CREATE POLICY "Only admins can delete achievements"
+    ON public.user_achievements FOR DELETE
+    USING (auth.uid() IN (
+        SELECT id FROM public.users WHERE role = 'ADMIN'
+    ));
+
+-- Allow system functions to insert achievements
+CREATE POLICY "System can insert achievements"
+    ON public.user_achievements FOR INSERT
+    WITH CHECK (true);
 
 -- Grant necessary permissions
 GRANT SELECT ON public.user_achievements TO anon, authenticated;
 GRANT SELECT ON public.users TO anon, authenticated;
 GRANT SELECT ON public.seasons TO anon, authenticated;
+
+-- Grant admin permissions
+GRANT ALL ON public.user_achievements TO authenticated;
+GRANT USAGE ON SCHEMA public TO authenticated;
 
 -- Create indexes
 CREATE INDEX idx_user_achievements_user_id ON public.user_achievements(user_id);
@@ -52,6 +79,7 @@ CREATE OR REPLACE FUNCTION public.assign_season_winner(season_id UUID)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     winner_id UUID;
@@ -135,6 +163,9 @@ BEGIN
     ORDER BY avg_theme DESC, cake_count DESC
     LIMIT 1;
 
+    -- Temporarily disable RLS for this function
+    ALTER TABLE public.user_achievements DISABLE ROW LEVEL SECURITY;
+
     -- Insert achievements if they don't already exist
     -- Season winner
     IF winner_id IS NOT NULL AND NOT EXISTS (
@@ -179,6 +210,9 @@ BEGIN
         INSERT INTO public.user_achievements (user_id, achievement_type, season_id)
         VALUES (best_theme_id, 'best_theme', assign_season_winner.season_id);
     END IF;
+
+    -- Re-enable RLS
+    ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 END;
 $$;
 

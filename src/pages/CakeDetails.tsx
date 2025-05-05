@@ -13,6 +13,7 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  IconButton,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCake, useCakeRatings } from "@hooks/useCakeQuery";
@@ -149,10 +150,26 @@ export function CakeDetails() {
                   {ratings.map((rating) => (
                     <ListItem key={rating.id}>
                       <ListItemAvatar>
-                        <Avatar
-                          src={rating.user?.avatar_url}
-                          alt={rating.user?.name}
-                        />
+                        <IconButton
+                          onClick={() =>
+                            rating.user?.id &&
+                            navigate(`/profile/${rating.user.id}`)
+                          }
+                          sx={{ p: 0 }}
+                        >
+                          <Avatar
+                            src={rating.user?.avatar_url}
+                            alt={rating.user?.name}
+                            sx={{
+                              cursor: "pointer",
+                              "&:hover": {
+                                opacity: 0.8,
+                              },
+                            }}
+                          >
+                            {rating.user?.name?.[0] || "U"}
+                          </Avatar>
+                        </IconButton>
                       </ListItemAvatar>
                       <ListItemText
                         primary={rating.user?.name}
@@ -205,11 +222,26 @@ export function CakeDetails() {
                           mb: 1,
                         }}
                       >
-                        <Avatar
-                          src={rating.user?.avatar_url}
-                          alt={rating.user?.name}
-                          sx={{ width: 32, height: 32 }}
-                        />
+                        <IconButton
+                          onClick={() =>
+                            rating.user?.id &&
+                            navigate(`/profile/${rating.user.id}`)
+                          }
+                          sx={{ p: 0 }}
+                        >
+                          <Avatar
+                            src={rating.user?.avatar_url}
+                            alt={rating.user?.name}
+                            sx={{
+                              cursor: "pointer",
+                              "&:hover": {
+                                opacity: 0.8,
+                              },
+                            }}
+                          >
+                            {rating.user?.name?.[0] || "U"}
+                          </Avatar>
+                        </IconButton>
                         <Typography
                           variant="subtitle2"
                           sx={{ fontWeight: 600 }}

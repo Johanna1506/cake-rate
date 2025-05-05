@@ -68,19 +68,29 @@ export function ActiveWeekCard({
               }}
             >
               {week.user && (
-                <Avatar
-                  src={week.user.avatar_url}
-                  alt={week.user.name}
-                  sx={{
-                    width: { xs: 48, sm: 64 },
-                    height: { xs: 48, sm: 64 },
-                    border: "2px solid",
-                    borderColor: "primary.main",
-                    boxShadow: 2,
-                  }}
+                <IconButton
+                  onClick={() =>
+                    week.user?.id && navigate(`/profile/${week.user.id}`)
+                  }
+                  sx={{ p: 0 }}
                 >
-                  {week.user.name?.[0] || "U"}
-                </Avatar>
+                  <Avatar
+                    src={week.user.avatar_url}
+                    alt={week.user.name}
+                    sx={{
+                      width: { xs: 48, sm: 64 },
+                      height: { xs: 48, sm: 64 },
+                      border: "2px solid",
+                      borderColor: "primary.main",
+                      cursor: "pointer",
+                      "&:hover": {
+                        opacity: 0.8,
+                      },
+                    }}
+                  >
+                    {week.user.name?.[0] || "U"}
+                  </Avatar>
+                </IconButton>
               )}
               <Box>
                 <Typography
@@ -159,7 +169,6 @@ export function ActiveWeekCard({
           {cake && (
             <CakeDetails
               cake={cake}
-              week={week}
               currentUser={currentUser}
               onViewDetails={() => navigate(`/cake-history/${cake.id}`)}
               onVote={() => setShowRatingModal(true)}

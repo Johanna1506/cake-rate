@@ -13,12 +13,14 @@ import {
   Dialog,
   DialogContent,
   Avatar,
+  IconButton,
 } from "@mui/material";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentSeason } from "../hooks/useWeekQuery";
 import { useSession, useUserDetails } from "@hooks/useAuthQuery";
+import { useNavigate } from "react-router-dom";
 import { ActiveWeekCard } from "@components/ActiveWeekCard";
 import preparingSeasonImage from "../../public/images/preparing-season.svg";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
@@ -33,12 +35,13 @@ import { User } from "../types";
 
 export function Home() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: seasonsData, isLoading: isLoadingSeason } = useCurrentSeason();
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { data: session } = useSession();
   const { data: currentUser } = useUserDetails(session?.session?.user?.id);
-  console.log("seasonsData", seasonsData);
+
   if (isLoadingSeason) {
     return (
       <Container maxWidth="md">
@@ -286,18 +289,30 @@ export function Home() {
                             }}
                           >
                             {week.user && (
-                              <Avatar
-                                src={week.user.avatar_url}
-                                alt={week.user.name}
-                                sx={{
-                                  width: 56,
-                                  height: 56,
-                                  border: "2px solid",
-                                  borderColor: "primary.main",
-                                }}
+                              <IconButton
+                                onClick={() =>
+                                  week.user?.id &&
+                                  navigate(`/profile/${week.user.id}`)
+                                }
+                                sx={{ p: 0 }}
                               >
-                                {week.user.name?.[0] || "U"}
-                              </Avatar>
+                                <Avatar
+                                  src={week.user.avatar_url}
+                                  alt={week.user.name}
+                                  sx={{
+                                    width: 56,
+                                    height: 56,
+                                    border: "2px solid",
+                                    borderColor: "primary.main",
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                      opacity: 0.8,
+                                    },
+                                  }}
+                                >
+                                  {week.user.name?.[0] || "U"}
+                                </Avatar>
+                              </IconButton>
                             )}
                             <Box>
                               <Typography

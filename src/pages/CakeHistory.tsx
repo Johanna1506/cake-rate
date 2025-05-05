@@ -14,6 +14,8 @@ import {
   Alert,
   Collapse,
   Chip,
+  Avatar,
+  IconButton,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Cake, Week } from "../types";
@@ -87,6 +89,7 @@ const LoadingCard = () => (
 interface CakeWithWeek extends Cake {
   week: Week;
   user: {
+    id: string;
     name: string;
     avatar_url: string;
   };
@@ -415,17 +418,28 @@ export function CakeHistory() {
                               mb: 2,
                             }}
                           >
-                            <Box
-                              component="img"
-                              src={cake.user.avatar_url}
-                              alt={cake.user.name}
-                              sx={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: "50%",
-                                objectFit: "cover",
-                              }}
-                            />
+                            <IconButton
+                              onClick={() =>
+                                cake.user?.id &&
+                                navigate(`/profile/${cake.user.id}`)
+                              }
+                              sx={{ p: 0 }}
+                            >
+                              <Avatar
+                                src={cake.user.avatar_url}
+                                alt={cake.user.name}
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    opacity: 0.8,
+                                  },
+                                }}
+                              >
+                                {cake.user.name?.[0] || "U"}
+                              </Avatar>
+                            </IconButton>
                             <Box sx={{ flex: 1 }}>
                               <Typography variant="h6" noWrap>
                                 {cake.user.name}

@@ -16,6 +16,7 @@ import {
   Avatar,
   Paper,
   Fade,
+  IconButton,
 } from "@mui/material";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -36,7 +37,16 @@ interface CustomRatingProps {
   ariaDescribedBy?: string;
 }
 
-function CustomRating({ value, onChange, max, label, error, helperText, ariaLabel, ariaDescribedBy }: CustomRatingProps) {
+function CustomRating({
+  value,
+  onChange,
+  max,
+  label,
+  error,
+  helperText,
+  ariaLabel,
+  ariaDescribedBy,
+}: CustomRatingProps) {
   const handleChange = (_: React.SyntheticEvent, newValue: number | null) => {
     if (newValue === null) {
       onChange(null);
@@ -50,7 +60,11 @@ function CustomRating({ value, onChange, max, label, error, helperText, ariaLabe
 
   return (
     <Box>
-      <Typography component="legend" gutterBottom color={error ? "error" : "text.primary"}>
+      <Typography
+        component="legend"
+        gutterBottom
+        color={error ? "error" : "text.primary"}
+      >
         {label} (sur {max})
       </Typography>
       <Rating
@@ -67,7 +81,11 @@ function CustomRating({ value, onChange, max, label, error, helperText, ariaLabe
         </Typography>
       )}
       {error && helperText && (
-        <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="error"
+          sx={{ display: "block", mt: 0.5 }}
+        >
           {helperText}
         </Typography>
       )}
@@ -83,10 +101,10 @@ function CakeHeader({ cake, userRating }: { cake: any; userRating: boolean }) {
         gutterBottom
         align="center"
         sx={{
-          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+          fontSize: { xs: "1.25rem", sm: "1.5rem" },
           mb: 2,
           fontWeight: 600,
-          color: 'primary.main'
+          color: "primary.main",
         }}
       >
         {userRating ? "Modifier votre note" : "Noter le gâteau"}
@@ -99,11 +117,11 @@ function CakeHeader({ cake, userRating }: { cake: any; userRating: boolean }) {
         sx={{
           objectFit: "cover",
           borderRadius: 2,
-          height: { xs: '200px', sm: '300px' },
-          transition: 'transform 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)'
-          }
+          height: { xs: "200px", sm: "300px" },
+          transition: "transform 0.3s ease-in-out",
+          "&:hover": {
+            transform: "scale(1.02)",
+          },
         }}
       />
     </Box>
@@ -111,31 +129,42 @@ function CakeHeader({ cake, userRating }: { cake: any; userRating: boolean }) {
 }
 
 function CakeInfo({ cake }: { cake: any }) {
+  const navigate = useNavigate();
+
   return (
     <Box sx={{ mb: 2 }}>
-      <Box sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        flexDirection: { xs: 'column', sm: 'row' },
-        textAlign: { xs: 'center', sm: 'left' },
-        mb: 1.5
-      }}>
-        <Avatar
-          src={cake.user?.avatar_url}
-          alt={cake.user?.name}
-          sx={{
-            width: 40,
-            height: 40,
-            border: '2px solid',
-            borderColor: 'primary.main'
-          }}
-        />
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <IconButton
+          onClick={() => cake.user?.id && navigate(`/profile/${cake.user.id}`)}
+          sx={{ p: 0 }}
+        >
+          <Avatar
+            src={cake.user?.avatar_url}
+            alt={cake.user?.name}
+            sx={{
+              width: 40,
+              height: 40,
+              cursor: "pointer",
+              "&:hover": {
+                opacity: 0.8,
+              },
+            }}
+          >
+            {cake.user?.name?.[0] || "U"}
+          </Avatar>
+        </IconButton>
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1rem', sm: '1.1rem' },
-            fontWeight: 500
+            fontSize: { xs: "1rem", sm: "1.1rem" },
+            fontWeight: 500,
           }}
         >
           Gâteau réalisé par {cake.user?.name}
@@ -146,10 +175,10 @@ function CakeInfo({ cake }: { cake: any }) {
         variant="h6"
         gutterBottom
         sx={{
-          fontSize: { xs: '1.1rem', sm: '1.2rem' },
+          fontSize: { xs: "1.1rem", sm: "1.2rem" },
           fontWeight: 600,
-          color: 'text.primary',
-          mb: 1
+          color: "text.primary",
+          mb: 1,
         }}
       >
         {cake.name}
@@ -160,7 +189,7 @@ function CakeInfo({ cake }: { cake: any }) {
         color="text.secondary"
         sx={{
           lineHeight: 1.5,
-          mb: 1.5
+          mb: 1.5,
         }}
       >
         {cake.description}
@@ -172,17 +201,17 @@ function CakeInfo({ cake }: { cake: any }) {
           color="primary"
           sx={{
             fontWeight: 600,
-            backgroundColor: 'primary.main',
-            color: 'white',
-            '& .MuiChip-label': {
+            backgroundColor: "primary.main",
+            color: "white",
+            "& .MuiChip-label": {
               px: 2,
               py: 0.5,
             },
-            alignSelf: { xs: 'center', sm: 'flex-start' },
+            alignSelf: { xs: "center", sm: "flex-start" },
             boxShadow: 1,
-            '&:hover': {
-              backgroundColor: 'primary.dark',
-            }
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
           }}
         />
         {cake.week && (
@@ -191,8 +220,8 @@ function CakeInfo({ cake }: { cake: any }) {
             color="text.secondary"
             sx={{
               mt: 1,
-              textAlign: { xs: 'center', sm: 'left' },
-              fontStyle: 'italic'
+              textAlign: { xs: "center", sm: "left" },
+              fontStyle: "italic",
             }}
           >
             {format(new Date(cake.week.start_date), "dd MMMM yyyy", {
@@ -227,7 +256,7 @@ function RatingForm({
   handleSubmit,
   appearanceError,
   tasteError,
-  themeAdherenceError
+  themeAdherenceError,
 }: {
   appearance: number | null;
   setAppearance: (value: number | null) => void;
@@ -253,9 +282,9 @@ function RatingForm({
       component="form"
       onSubmit={handleSubmit}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
       }}
       role="form"
       aria-label="Formulaire de notation du gâteau"
@@ -305,7 +334,9 @@ function RatingForm({
             if (!e.target.value.trim()) {
               setCommentError("Veuillez ajouter un commentaire");
             } else if (e.target.value.length < 10) {
-              setCommentError("Le commentaire doit contenir au moins 10 caractères");
+              setCommentError(
+                "Le commentaire doit contenir au moins 10 caractères"
+              );
             } else {
               setCommentError("");
             }
@@ -317,16 +348,16 @@ function RatingForm({
         aria-label="Ajouter un commentaire sur le gâteau"
         aria-describedby={commentError ? "comment-error" : undefined}
         sx={{
-          '& .MuiInputBase-root': {
-            fontSize: { xs: '0.875rem', sm: '1rem' },
-            transition: 'all 0.2s ease-in-out',
-            '&:hover': {
-              backgroundColor: 'action.hover'
-            }
+          "& .MuiInputBase-root": {
+            fontSize: { xs: "0.875rem", sm: "1rem" },
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              backgroundColor: "action.hover",
+            },
           },
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2
-          }
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 2,
+          },
         }}
       />
 
@@ -335,9 +366,9 @@ function RatingForm({
           variant="h6"
           align="center"
           sx={{
-            color: 'primary.main',
+            color: "primary.main",
             fontWeight: 600,
-            fontSize: { xs: '1rem', sm: '1.1rem' }
+            fontSize: { xs: "1rem", sm: "1.1rem" },
           }}
           role="status"
           aria-label="Note totale du gâteau"
@@ -351,18 +382,22 @@ function RatingForm({
         variant="contained"
         fullWidth
         disabled={loading}
-        aria-label={loading ? "Enregistrement de la note en cours..." : "Enregistrer la note"}
+        aria-label={
+          loading
+            ? "Enregistrement de la note en cours..."
+            : "Enregistrer la note"
+        }
         sx={{
           py: 1.5,
-          fontSize: { xs: '0.875rem', sm: '1rem' },
+          fontSize: { xs: "0.875rem", sm: "1rem" },
           fontWeight: 600,
           borderRadius: 2,
-          textTransform: 'none',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: 3
-          }
+          textTransform: "none",
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: 3,
+          },
         }}
       >
         {loading ? <CircularProgress size={24} /> : "Enregistrer la note"}
@@ -471,7 +506,6 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
       });
       handleSuccess("Votre note a été enregistrée avec succès !");
       onClose ? onClose() : navigate("/");
-
     } catch (err) {
       handleError(err);
     } finally {
@@ -487,17 +521,21 @@ export function CakeRatingForm({ cakeId, onClose }: CakeRatingFormProps) {
     );
   }
 
-  const userRating = ratings?.some((r) => r.user_id === session?.session?.user?.id) ?? false;
+  const userRating =
+    ratings?.some((r) => r.user_id === session?.session?.user?.id) ?? false;
 
   return (
     <Fade in={true} timeout={500}>
-      <Paper elevation={0} sx={{
-        p: { xs: 2, sm: 3 },
-        maxWidth: '100%',
-        overflow: 'hidden',
-        borderRadius: 2,
-        bgcolor: 'background.paper',
-      }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 3 },
+          maxWidth: "100%",
+          overflow: "hidden",
+          borderRadius: 2,
+          bgcolor: "background.paper",
+        }}
+      >
         <CakeHeader cake={cake} userRating={userRating} />
         <CakeInfo cake={cake} />
         <RatingForm
