@@ -166,14 +166,45 @@ export function ActiveWeekCard({
           </Box>
 
           {/* Contenu du gâteau */}
-          {cake && (
+          {cake ? (
             <CakeDetails
               cake={cake}
               currentUser={currentUser}
               onViewDetails={() => navigate(`/cake-history/${cake.id}`)}
               onVote={() => setShowRatingModal(true)}
             />
-          )}
+          ) : week.user ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                py: 3,
+                px: 2,
+                bgcolor: "background.paper",
+                borderRadius: 1,
+                border: "1px dashed",
+                borderColor: "divider",
+              }}
+            >
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ fontStyle: "italic", textAlign: "center" }}
+              >
+                🎂 Notre chef pâtissier·ère est en train de préparer une
+                surprise sucrée...
+                <br />
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{ opacity: 0.7 }}
+                >
+                  (On entend déjà le bruit du batteur électrique !)
+                </Typography>
+              </Typography>
+            </Box>
+          ) : null}
         </CardContent>
       </Card>
 

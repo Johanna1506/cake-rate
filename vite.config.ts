@@ -1,57 +1,83 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { compression } from 'vite-plugin-compression2'
-import { imagetools } from 'vite-imagetools'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { compression } from "vite-plugin-compression2";
+import { imagetools } from "vite-imagetools";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     compression({
-      algorithm: 'gzip',
+      algorithm: "gzip",
       exclude: [/\.(br)$/, /\.(gz)$/],
       deleteOriginalAssets: false,
     }),
     compression({
-      algorithm: 'brotliCompress',
+      algorithm: "brotliCompress",
       exclude: [/\.(br)$/, /\.(gz)$/],
       deleteOriginalAssets: false,
     }),
     imagetools({
       defaultDirectives: new URLSearchParams([
-        ['format', 'webp'],
-        ['quality', '80'],
+        ["format", "webp"],
+        ["quality", "80"],
       ]),
     }),
   ],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@pages': path.resolve(__dirname, './src/pages'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@lib': path.resolve(__dirname, './src/lib'),
-      '@context': path.resolve(__dirname, './src/context'),
-    },
+    alias: [
+      {
+        find: "@",
+        replacement: path.resolve(__dirname, "src"),
+      },
+      {
+        find: "@layouts",
+        replacement: path.resolve(__dirname, "src/layouts"),
+      },
+      {
+        find: "@components",
+        replacement: path.resolve(__dirname, "src/components"),
+      },
+      {
+        find: "@pages",
+        replacement: path.resolve(__dirname, "src/pages"),
+      },
+      {
+        find: "@hooks",
+        replacement: path.resolve(__dirname, "src/hooks"),
+      },
+      {
+        find: "@services",
+        replacement: path.resolve(__dirname, "src/services"),
+      },
+      {
+        find: "@lib",
+        replacement: path.resolve(__dirname, "src/lib"),
+      },
+      {
+        find: "@context",
+        replacement: path.resolve(__dirname, "src/context"),
+      },
+    ],
+    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"],
   },
-  base: '/cake-rate/',
+  base: "/cake-rate/",
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: "dist",
+    assetsDir: "assets",
     emptyOutDir: true,
     sourcemap: false,
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        pure_funcs: ["console.log", "console.info", "console.debug"],
         passes: 2,
         dead_code: true,
         global_defs: {
-          'process.env.NODE_ENV': '"production"',
+          "process.env.NODE_ENV": '"production"',
         },
       },
       mangle: {
@@ -66,34 +92,34 @@ export default defineConfig({
     },
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, './index.html'),
-        '404': path.resolve(__dirname, './404.html'),
+        main: path.resolve(__dirname, "./index.html"),
+        "404": path.resolve(__dirname, "./404.html"),
       },
       output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: "assets/[name]-[hash][extname]",
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
         manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            return 'vendor';
+          if (id.includes("node_modules")) {
+            return "vendor";
           }
-          if (id.includes('src/pages')) {
-            return 'pages';
+          if (id.includes("src/pages")) {
+            return "pages";
           }
-          if (id.includes('src/components')) {
-            return 'components';
+          if (id.includes("src/components")) {
+            return "components";
           }
-          if (id.includes('src/hooks')) {
-            return 'hooks';
+          if (id.includes("src/hooks")) {
+            return "hooks";
           }
-          if (id.includes('src/services')) {
-            return 'services';
+          if (id.includes("src/services")) {
+            return "services";
           }
-          if (id.includes('src/lib')) {
-            return 'lib';
+          if (id.includes("src/lib")) {
+            return "lib";
           }
-          if (id.includes('src/context')) {
-            return 'context';
+          if (id.includes("src/context")) {
+            return "context";
           }
         },
       },
@@ -101,18 +127,18 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@mui/material',
-      '@mui/icons-material',
-      '@emotion/react',
-      '@emotion/styled',
-      '@tanstack/react-query',
-      '@tanstack/react-query-devtools'
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@mui/material",
+      "@mui/icons-material",
+      "@emotion/react",
+      "@emotion/styled",
+      "@tanstack/react-query",
+      "@tanstack/react-query-devtools",
     ],
     esbuildOptions: {
-      target: 'es2020',
+      target: "es2020",
     },
   },
-})
+});
