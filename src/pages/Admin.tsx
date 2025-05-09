@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useHasRole } from "@hooks/useAuthQuery";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import {
   Box,
@@ -31,8 +31,8 @@ function TabPanel(props: TabPanelProps) {
       id={`admin-tabpanel-${index}`}
       aria-labelledby={`admin-tab-${index}`}
       style={{
-        display: value === index ? 'block' : 'none',
-        visibility: value === index ? 'visible' : 'hidden',
+        display: value === index ? "block" : "none",
+        visibility: value === index ? "visible" : "hidden",
       }}
       {...other}
     >
@@ -62,15 +62,22 @@ export function Admin() {
   const isAdmin = useHasRole("ADMIN");
   const { handleError } = useErrorHandler();
   const [loading, setLoading] = useState(true);
-  const [tabValue, setTabValue] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tabValue, setTabValue] = useState(() => {
+    const tab = searchParams.get("tab");
+    return tab ? parseInt(tab) : 0;
+  });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     event.preventDefault();
     setTabValue(newValue);
+    setSearchParams({ tab: newValue.toString() });
   };
 
   const handleAdminError = useCallback(() => {
-    handleError("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
+    handleError(
+      "Vous n'avez pas les permissions nécessaires pour accéder à cette page"
+    );
     setLoading(false);
   }, [handleError]);
 
@@ -101,37 +108,41 @@ export function Admin() {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{
-        py: { xs: 2, sm: 4 },
-        px: { xs: 1, sm: 2 }
-      }}>
+      <Box
+        sx={{
+          py: { xs: 2, sm: 4 },
+          px: { xs: 1, sm: 2 },
+        }}
+      >
         <Typography
           variant="h4"
           component="h1"
           gutterBottom
           sx={{
-            fontSize: { xs: '1.5rem', sm: '2rem' },
-            textAlign: { xs: 'center', sm: 'left' }
+            fontSize: { xs: "1.5rem", sm: "2rem" },
+            textAlign: { xs: "center", sm: "left" },
           }}
         >
           Administration
         </Typography>
 
-        <Box sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          overflowX: 'auto',
-          '&::-webkit-scrollbar': {
-            height: '4px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(0, 0, 0, 0.2)',
-            borderRadius: '4px',
-          },
-        }}>
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            overflowX: "auto",
+            "&::-webkit-scrollbar": {
+              height: "4px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "rgba(0, 0, 0, 0.2)",
+              borderRadius: "4px",
+            },
+          }}
+        >
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
@@ -141,26 +152,26 @@ export function Admin() {
             allowScrollButtonsMobile
             sx={{
               minHeight: { xs: 48, sm: 64 },
-              '& .MuiTab-root': {
-                color: 'primary.main',
-                fontSize: { xs: '0.875rem', sm: '1rem' },
-                textTransform: 'none',
+              "& .MuiTab-root": {
+                color: "primary.main",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+                textTransform: "none",
                 minHeight: { xs: 48, sm: 64 },
                 px: { xs: 2, sm: 3 },
-                whiteSpace: 'nowrap',
-                '&.Mui-selected': {
-                  color: 'text.secondary',
-                  fontWeight: 'bold',
+                whiteSpace: "nowrap",
+                "&.Mui-selected": {
+                  color: "text.secondary",
+                  fontWeight: "bold",
                 },
               },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'text.secondary',
+              "& .MuiTabs-indicator": {
+                backgroundColor: "text.secondary",
                 height: 3,
-                borderRadius: '3px 3px 0 0',
+                borderRadius: "3px 3px 0 0",
               },
-              '& .MuiTabs-scrollButtons': {
-                color: 'primary.main',
-                '&.Mui-disabled': {
+              "& .MuiTabs-scrollButtons": {
+                color: "primary.main",
+                "&.Mui-disabled": {
                   opacity: 0.3,
                 },
               },
