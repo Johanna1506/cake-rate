@@ -63,7 +63,6 @@ export function ForgotPassword() {
     return (
         <Container maxWidth="sm">
             <Box sx={{ mt: 8 }}>
-                <Paper elevation={3} sx={{ p: 4 }}>
                     <Typography variant="h4" component="h1" gutterBottom align="center">
                         Mot de passe oublié
                     </Typography>
@@ -109,7 +108,6 @@ export function ForgotPassword() {
                             Retour à la connexion
                         </Button>
                     </Box>
-                </Paper>
             </Box>
         </Container>
     );

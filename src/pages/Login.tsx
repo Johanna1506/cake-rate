@@ -17,15 +17,6 @@ import {
 import { styled } from '@mui/material/styles';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-    padding: theme.spacing(4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    maxWidth: 400,
-    margin: '0 auto',
-}));
-
 const StyledForm = styled('form')(({ theme }) => ({
     width: '100%',
     marginTop: theme.spacing(3),
@@ -100,7 +91,7 @@ export function Login() {
                     alignItems: 'center',
                 }}
             >
-                <StyledPaper>
+            
                     <Typography component="h1" variant="h5">
                         Connexion
                     </Typography>
@@ -190,7 +181,6 @@ export function Login() {
                             </Button>
                         </Stack>
                     </StyledForm>
-                </StyledPaper>
             </Box>
         </Container>
     );
