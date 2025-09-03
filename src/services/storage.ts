@@ -4,12 +4,8 @@ export const uploadAvatar = async (
   file: File,
   userId: string
 ): Promise<string> => {
-  const fileExt = file.name.split(".").pop();
   const fileName = `${userId}/avatar`;
 
-  console.log("Uploading avatar with filename:", fileName);
-  console.log("User ID:", userId);
-  console.log("File extension:", fileExt);
 
   // Supprimer l'ancien avatar s'il existe
   const { error: deleteError } = await supabaseServer.storage

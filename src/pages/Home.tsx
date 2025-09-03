@@ -156,7 +156,6 @@ export function Home() {
         );
       })
     : [];
-  console.log(sortedWeeks);
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Section de la dernière saison terminée */}

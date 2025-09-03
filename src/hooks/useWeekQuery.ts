@@ -92,6 +92,7 @@ export function useCurrentSeason() {
         `
           )
           .eq("is_active", false)
+          .not("winner", "is", null)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -101,8 +102,6 @@ export function useCurrentSeason() {
       // Transformer les données pour avoir une structure plus simple
       const transformSeason = (season: DatabaseSeason | null) => {
         if (!season) return null;
-
-        console.log("Raw season data:", season);
 
         // Transformer les semaines
         const transformedWeeks = season.weeks?.map((week) => ({
@@ -129,7 +128,6 @@ export function useCurrentSeason() {
           achievements,
         };
 
-        console.log("Transformed season data:", transformedSeason);
         return transformedSeason;
       };
 
@@ -138,7 +136,6 @@ export function useCurrentSeason() {
         lastCompletedSeason: transformSeason(lastCompletedSeason),
       } as SeasonsData;
 
-      console.log("Final result:", result);
       return result;
     },
   });
@@ -158,6 +155,7 @@ export function useCurrentWeek() {
                 `
         )
         .eq("is_active", true)
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;

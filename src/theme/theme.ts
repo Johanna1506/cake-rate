@@ -83,8 +83,20 @@ export const lightTheme = createTheme({
         MuiAppBar: {
             styleOverrides: {
                 root: {
-                    backgroundColor: '#1976d2',
+                    backgroundColor: '#b0c4b1;',
                     borderRadius: 0,
+                },
+            },
+        },
+        MuiBottomNavigation: {
+            styleOverrides: {
+                root: {
+                    '& .MuiBottomNavigationAction-root.Mui-selected': {
+                        color: '#4a5759',
+                    },
+                    '& .MuiBottomNavigationAction-label.Mui-selected': {
+                        fontWeight: 700,
+                    },
                 },
             },
         },

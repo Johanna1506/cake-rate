@@ -29,12 +29,6 @@ export const auth = {
   supabase,
 
   async signUp(email: string, password: string, options?: SignUpOptions) {
-    console.log('Attempting sign up with:', {
-      email,
-      password: password ? '***' : undefined,
-      options
-    });
-
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -44,26 +38,6 @@ export const auth = {
             name: options?.data?.name,
           },
         },
-      });
-
-      console.log('Sign up response:', {
-        data: data ? {
-          user: data.user ? {
-            id: data.user.id,
-            email: data.user.email,
-            created_at: data.user.created_at
-          } : null,
-          session: data.session ? {
-            access_token: data.session.access_token ? '***' : null,
-            refresh_token: data.session.refresh_token ? '***' : null,
-            expires_at: data.session.expires_at
-          } : null
-        } : null,
-        error: error ? {
-          name: error.name,
-          message: error.message,
-          status: error.status
-        } : null
       });
 
       if (data?.session) {

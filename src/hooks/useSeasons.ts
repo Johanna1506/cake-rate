@@ -87,8 +87,6 @@ export function useSeasons() {
           .update(seasonData)
           .eq("id", seasonId);
       } else {
-        // Créer la saison
-        console.log(seasonData);
         const { data: season, error: seasonError } = await supabaseServer
           .from("seasons")
           .insert([seasonData])

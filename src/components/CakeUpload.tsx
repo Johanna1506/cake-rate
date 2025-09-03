@@ -36,10 +36,9 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
   const [descriptionError, setDescriptionError] = useState("");
   const [descriptionTouched, setDescriptionTouched] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const validateForm = () => {
     let isValid = true;
-
+  
     if (!file) {
       handleError("Veuillez sélectionner une photo");
       isValid = false;
@@ -188,7 +187,6 @@ export const CakeUpload: React.FC<CakeUploadProps> = ({ onClose, weekId }) => {
       </Box>
     );
   }
-
   if (currentWeek.user_id !== session.session.user.id) {
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>

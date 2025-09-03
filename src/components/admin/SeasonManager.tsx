@@ -271,11 +271,9 @@ export function SeasonManager({ isTabActive }: SeasonManagerProps) {
       };
 
       if (isEditing && currentSeason) {
-        console.log(seasonData);
         await saveSeason(seasonData, currentSeason.id);
         handleSuccess("Saison mise à jour avec succès");
       } else {
-        console.log(seasonData);
         await saveSeason(seasonData, undefined, weeks);
         handleSuccess("Saison créée avec succès");
       }
