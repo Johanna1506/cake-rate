@@ -1,27 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CakeUpload } from "@components/CakeUpload";
-import {
-  Box,
-  Container,
-  CircularProgress,
-  Alert,
-  Chip,
-  Typography,
-  Stack,
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  Avatar,
-  IconButton,
-} from "@mui/material";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { Box, Container, CircularProgress, Alert, Typography, Stack, Dialog, DialogContent } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentSeason } from "../hooks/useWeekQuery";
 import { useSession, useUserDetails } from "@hooks/useAuthQuery";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ActiveWeekCard } from "@components/ActiveWeekCard";
+import { LastSeasonSection } from "@components/LastSeasonSection";
+import { CurrentSeasonHeader } from "@components/CurrentSeasonHeader";
+import { UpcomingWeekItem } from "@components/UpcomingWeekItem";
 import preparingSeasonImage from "../../public/images/preparing-season.svg";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import ShareIcon from "@mui/icons-material/Share";
@@ -30,17 +17,31 @@ import { FeatureCard } from "@components/FeatureCard";
 import { HeroSection } from "@components/HeroSection";
 import { AppPreview } from "@components/AppPreview";
 import { ComingSoonSection } from "@components/ComingSoonSection";
-import { SeasonRewards } from "@components/SeasonRewards";
+//
 import { User } from "../types";
 
 export function Home() {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { data: seasonsData, isLoading: isLoadingSeason } = useCurrentSeason();
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { data: session } = useSession();
   const { data: currentUser } = useUserDetails(session?.session?.user?.id);
+
+  // Always compute derived data before any early returns to preserve hooks order
+  const sortedWeeks = useMemo(() => {
+    const weeks = seasonsData?.currentSeason?.weeks;
+    if (!weeks) return [];
+    return [...weeks].sort((a, b) => {
+      if (a.is_active && !b.is_active) return -1;
+      if (!a.is_active && b.is_active) return 1;
+      return (
+        new Date(b.created_at || 0).getTime() -
+        new Date(a.created_at || 0).getTime()
+      );
+    });
+  }, [seasonsData?.currentSeason?.weeks]);
 
   if (isLoadingSeason) {
     return (
@@ -145,17 +146,7 @@ export function Home() {
     );
   }
 
-  // Trier les semaines : active d'abord, puis par date de création
-  const sortedWeeks = currentSeason?.weeks
-    ? [...currentSeason.weeks].sort((a, b) => {
-        if (a.is_active && !b.is_active) return -1;
-        if (!a.is_active && b.is_active) return 1;
-        return (
-          new Date(b.created_at || 0).getTime() -
-          new Date(a.created_at || 0).getTime()
-        );
-      })
-    : [];
+  // sortedWeeks already computed above with useMemo
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Section de la dernière saison terminée */}
@@ -164,60 +155,14 @@ export function Home() {
           <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
             🏆 Dernière saison terminée
           </Typography>
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-                {lastCompletedSeason.theme}
-              </Typography>
-
-              <Stack direction="row" sx={{ mb: 2, flexWrap: "wrap", gap: 1 }}>
-                <Chip
-                  label={`${lastCompletedSeason.participant_count} participants`}
-                  size="small"
-                />
-                <Chip
-                  label={`${lastCompletedSeason.weeks?.length || 0} semaines`}
-                  size="small"
-                />
-                <Chip label="Saison terminée" size="small" color="success" />
-              </Stack>
-
-              {lastCompletedSeason.achievements && (
-                <SeasonRewards season={lastCompletedSeason} />
-              )}
-            </CardContent>
-          </Card>
+          <LastSeasonSection season={lastCompletedSeason} />
         </Box>
       )}
 
       {/* Section de la saison en cours */}
       {currentSeason && (
         <>
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-                {currentSeason.theme}
-              </Typography>
-
-              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <Chip
-                  label={`${currentSeason.participant_count} participants`}
-                  size="small"
-                />
-                <Chip
-                  label={`${currentSeason.weeks?.length || 0} semaines`}
-                  size="small"
-                />
-              </Stack>
-
-              <Typography variant="body1" color="text.secondary">
-                Participez à cette saison de pâtisserie en réalisant des gâteaux
-                sur le thème "{currentSeason.theme}". Chaque semaine, un
-                participant différent sera sélectionné pour présenter sa
-                création.
-              </Typography>
-            </CardContent>
-          </Card>
+          <CurrentSeasonHeader season={currentSeason} />
 
           {/* Section Semaine en cours */}
           {sortedWeeks.some((week) => week.is_active) && (
@@ -253,115 +198,16 @@ export function Home() {
           )}
 
           {/* Section Semaines à venir */}
-          {sortedWeeks.some((week) => !week.is_active) && (
+          {sortedWeeks.some((week) => !week.is_active && new Date(week.end_date) >= new Date()) && (
             <Box>
               <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
                 Semaines à venir
               </Typography>
               <Stack spacing={2}>
                 {sortedWeeks
-                  .filter((week) => !week.is_active)
+                  .filter((week) => !week.is_active && new Date(week.end_date) >= new Date())
                   .map((week) => (
-                    <Card
-                      key={week.id}
-                      sx={{
-                        transition: "all 0.2s ease-in-out",
-                        "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: 3,
-                        },
-                      }}
-                    >
-                      <CardContent sx={{ p: 3 }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: 3,
-                              alignItems: "flex-start",
-                            }}
-                          >
-                            {week.user && (
-                              <IconButton
-                                onClick={() =>
-                                  week.user?.id &&
-                                  navigate(`/profile/${week.user.id}`)
-                                }
-                                sx={{ p: 0 }}
-                              >
-                                <Avatar
-                                  src={week.user.avatar_url}
-                                  alt={week.user.name}
-                                  sx={{
-                                    width: 56,
-                                    height: 56,
-                                    border: "2px solid",
-                                    borderColor: "primary.main",
-                                    cursor: "pointer",
-                                    "&:hover": {
-                                      opacity: 0.8,
-                                    },
-                                  }}
-                                >
-                                  {week.user.name?.[0] || "U"}
-                                </Avatar>
-                              </IconButton>
-                            )}
-                            <Box>
-                              <Typography
-                                variant="h6"
-                                component="h2"
-                                sx={{
-                                  mb: 1,
-                                  fontWeight: 600,
-                                  color: "text.primary",
-                                }}
-                              >
-                                {format(new Date(week.start_date), "dd MMMM", {
-                                  locale: fr,
-                                })}{" "}
-                                -{" "}
-                                {format(
-                                  new Date(week.end_date),
-                                  "dd MMMM yyyy",
-                                  {
-                                    locale: fr,
-                                  }
-                                )}
-                              </Typography>
-
-                              {week.user ? (
-                                <Typography
-                                  variant="subtitle1"
-                                  sx={{
-                                    color: "text.secondary",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                  }}
-                                >
-                                  Participant : {week.user.name}
-                                </Typography>
-                              ) : (
-                                <Typography
-                                  variant="subtitle1"
-                                  color="text.secondary"
-                                  sx={{ fontStyle: "italic" }}
-                                >
-                                  Aucun participant assigné
-                                </Typography>
-                              )}
-                            </Box>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                    <UpcomingWeekItem key={week.id} week={week} />
                   ))}
               </Stack>
             </Box>
