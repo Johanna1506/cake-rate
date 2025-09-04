@@ -1,4 +1,4 @@
-import { Box, CardMedia, Typography, Button, Stack } from "@mui/material";
+import { Box, CardMedia, Typography, Button, Stack, Rating } from "@mui/material";
 import { Cake, User } from "../types";
 import { useCakeRatings } from "@hooks/useCakeQuery";
 
@@ -19,6 +19,8 @@ export function CakeDetails({
   const userRating = ratings?.find(
     (rating) => rating.user_id === currentUser?.id
   );
+  const averageRatings = ratings?.length && ratings?.reduce((acc, rating) => acc + rating.appearance + rating.taste + rating.theme_adherence, 0) / ratings?.length;
+  const displayAverageRatings = averageRatings ? (averageRatings / 10) * 5 : 0;
 
   return (
     <Box
@@ -65,6 +67,7 @@ export function CakeDetails({
             alt={cake.name}
           />
         </Box>
+
         <Box
           sx={{
             flex: 1,
@@ -80,6 +83,19 @@ export function CakeDetails({
             <Typography variant="body1" color="text.secondary" paragraph>
               {cake.description}
             </Typography>
+            {cake.week?.show_scores && displayAverageRatings && (
+              <>
+                <Typography variant="h6" color="text.secondary" paragraph>
+                  Note moyenne :
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Rating value={displayAverageRatings} precision={0.5} readOnly size="large" />
+                <Typography variant="body2" color="text.secondary">
+                  {averageRatings?.toFixed(1)}/10
+                </Typography>
+                </Box>
+              </>
+            )}
           </Box>
 
           <Box>
