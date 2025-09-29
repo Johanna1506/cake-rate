@@ -71,71 +71,71 @@ export function Navigation() {
 
   return (
     <>
-      <AppBar position="static" role="banner" sx={{ display: { xs: "none", md: "block" } }}>
-        <Toolbar>
-        <Box component={Link} to="/" aria-label="Accueil" sx={{ display: "flex", alignItems: "center", textDecoration: "none", color: "inherit" }}>
-          <img src={logo} alt="Logo de l'application" style={{ height: 40, marginRight: 12 }} />
-        </Box>
+      <AppBar position="fixed" role="banner" sx={{ display: { xs: "none", md: "block" } }}>
+        <Toolbar sx={{ maxWidth: { xl: 1200 }, margin: "0 auto" }}>
+          <Box component={Link} to="/" aria-label="Accueil" sx={{ display: "flex", alignItems: "center", textDecoration: "none", color: "inherit" }}>
+            <img src={logo} alt="Logo de l'application" style={{ height: 40, marginRight: 12 }} />
+          </Box>
 
-        <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ flexGrow: 1 }} />
 
-        {session?.session?.user ? (
-          <>
-            <Button color="inherit" component={Link} to="/" startIcon={<HomeIcon />}>
-              Accueil
-            </Button>
-            <Button color="inherit" component={Link} to="/cake-history" startIcon={<HistoryIcon />}>
-              Historique
-            </Button>
-            <Tooltip title="Profil">
-              <IconButton color="inherit" onClick={handleMenuOpen} aria-haspopup="true" aria-expanded={isMenuOpen} aria-label="Ouvrir le menu utilisateur">
-                <Avatar src={userDetails?.avatar_url || undefined} alt={`Avatar de ${userDetails?.name || "utilisateur"}`}>
-                  {userDetails?.name?.[0] || "U"}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-          </>
-        ) : (
-          <Button color="inherit" component={Link} to="/login" startIcon={<LoginIcon />}>Connexion</Button>
-        )}
-
-        <Tooltip title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
-          <IconButton color="inherit" onClick={toggleTheme} aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
-            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-        </Tooltip>
-
-        <Menu
-          anchorEl={menuAnchor}
-          open={isMenuOpen}
-          onClose={handleMenuClose}
-          onClick={handleMenuClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          keepMounted
-        >
-          <MenuItem onClick={() => handleGo(`/profile/${session?.session?.user?.id}`)}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Profil</ListItemText>
-          </MenuItem>
-          {isAdmin && (
-            <MenuItem onClick={() => handleGo("/admin")}>
-              <ListItemIcon>
-                <AdminIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Administration</ListItemText>
-            </MenuItem>
+          {session?.session?.user ? (
+            <>
+              <Button color="inherit" component={Link} to="/" startIcon={<HomeIcon />}>
+                Accueil
+              </Button>
+              <Button color="inherit" component={Link} to="/cake-history" startIcon={<HistoryIcon />}>
+                Historique
+              </Button>
+              <Tooltip title="Profil">
+                <IconButton color="inherit" onClick={handleMenuOpen} aria-haspopup="true" aria-expanded={isMenuOpen} aria-label="Ouvrir le menu utilisateur">
+                  <Avatar src={userDetails?.avatar_url || undefined} alt={`Avatar de ${userDetails?.name || "utilisateur"}`}>
+                    {userDetails?.name?.[0] || "U"}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <Button color="inherit" component={Link} to="/login" startIcon={<LoginIcon />}>Connexion</Button>
           )}
-          <Divider />
-          <MenuItem onClick={handleSignOut}>
-            <ListItemIcon>
-              <LogoutIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Déconnexion</ListItemText>
-          </MenuItem>
-        </Menu>
+
+          <Tooltip title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+            <IconButton color="inherit" onClick={toggleTheme} aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+              {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={menuAnchor}
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+            onClick={handleMenuClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            keepMounted
+          >
+            <MenuItem onClick={() => handleGo(`/profile/${session?.session?.user?.id}`)}>
+              <ListItemIcon>
+                <PersonIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Profil</ListItemText>
+            </MenuItem>
+            {isAdmin && (
+              <MenuItem onClick={() => handleGo("/admin")}>
+                <ListItemIcon>
+                  <AdminIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Administration</ListItemText>
+              </MenuItem>
+            )}
+            <Divider />
+            <MenuItem onClick={handleSignOut}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Déconnexion</ListItemText>
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 

@@ -4,7 +4,6 @@ import { Box, Container, CircularProgress, Alert, Typography, Stack, Dialog, Dia
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentSeason } from "../hooks/useWeekQuery";
 import { useSession, useUserDetails } from "@hooks/useAuthQuery";
-// import { useNavigate } from "react-router-dom";
 import { ActiveWeekCard } from "@components/ActiveWeekCard";
 import { LastSeasonSection } from "@components/LastSeasonSection";
 import { CurrentSeasonHeader } from "@components/CurrentSeasonHeader";
@@ -17,7 +16,7 @@ import { FeatureCard } from "@components/FeatureCard";
 import { HeroSection } from "@components/HeroSection";
 import { AppPreview } from "@components/AppPreview";
 import { ComingSoonSection } from "@components/ComingSoonSection";
-//
+import { SeasonRanking } from "@components/SeasonRanking";
 import { User } from "../types";
 
 export function Home() {
@@ -197,6 +196,8 @@ export function Home() {
             </Box>
           )}
 
+          {/* Section Classement */}
+          <SeasonRanking seasonId={currentSeason.id} />
           {/* Section Semaines à venir */}
           {sortedWeeks.some((week) => !week.is_active && new Date(week.end_date) >= new Date()) && (
             <Box>

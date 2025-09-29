@@ -261,10 +261,6 @@ export function Profile() {
 
   return (
     <StyledContainer>
-      <Typography variant="h4" gutterBottom>
-        {isOwnProfile ? "Mon Profil" : "Profil Utilisateur"}
-      </Typography>
-
       <StyledCard elevation={3}>
         <StyledCardContent>
           {!isEditing && !isChangingPassword ? (

@@ -6,7 +6,9 @@ export function MainLayout() {
   return (
     <Box sx={{ pb: { xs: "80px", sm: 0 } }}>
       <Navigation />
-      <Outlet />
+      <Box sx={{ mt: { xl: "80px", sm: 0 } }}>
+        <Outlet />
+      </Box>
     </Box>
   );
 }
