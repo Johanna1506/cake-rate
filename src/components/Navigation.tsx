@@ -159,10 +159,8 @@ export function Navigation() {
                 >
                   <Avatar
                     src={userDetails?.avatar_url || undefined}
-                    width={40}
-                    height={40}
                     alt={`Avatar de ${userDetails?.name || "utilisateur"}`}
-                    sx={{ backgroundColor: "primary.main" }}
+                    sx={{ width: 40, height: 40, backgroundColor: "primary.main" }}
                   >
                     {userDetails?.name?.[0] || "U"}
                   </Avatar>
