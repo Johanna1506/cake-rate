@@ -432,6 +432,8 @@ export function CakeHistory() {
                                   width: 40,
                                   height: 40,
                                   cursor: "pointer",
+                                  backgroundColor: "primary.main",
+                                  border: "2px solid",
                                   "&:hover": {
                                     opacity: 0.8,
                                   },

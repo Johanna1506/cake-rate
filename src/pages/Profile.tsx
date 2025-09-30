@@ -77,6 +77,7 @@ const StyledAvatar = styled(Avatar)({
   fontSize: "3rem",
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
   border: "4px solid white",
+  backgroundColor: "primary.main",
 }) as typeof Avatar;
 
 const InfoContainer = styled(Box)(({ theme }) => ({

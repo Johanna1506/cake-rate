@@ -1,9 +1,38 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@context/ThemeContext";
-import { useSignOut, useSession, useUserDetails, useHasRole } from "@hooks/useAuthQuery";
-import { AppBar, Toolbar, Button, IconButton, Box, Menu, MenuItem, Avatar, Tooltip, ListItemIcon, ListItemText, Divider, BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { Home as HomeIcon, History as HistoryIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Login as LoginIcon, Logout as LogoutIcon, Person as PersonIcon, AdminPanelSettings as AdminIcon } from "@mui/icons-material";
+import {
+  useSignOut,
+  useSession,
+  useUserDetails,
+  useHasRole,
+} from "@hooks/useAuthQuery";
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  IconButton,
+  Box,
+  Menu,
+  MenuItem,
+  Avatar,
+  Tooltip,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  BottomNavigation,
+  BottomNavigationAction,
+} from "@mui/material";
+import {
+  Home as HomeIcon,
+  History as HistoryIcon,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+  AdminPanelSettings as AdminIcon,
+} from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 
@@ -12,7 +41,9 @@ export function Navigation() {
   const location = useLocation();
   const { mode, toggleTheme } = useTheme();
   const { data: session } = useSession();
-  const { data: userDetails } = useUserDetails(session?.session?.user?.id || "");
+  const { data: userDetails } = useUserDetails(
+    session?.session?.user?.id || ""
+  );
   const isAdmin = useHasRole("ADMIN");
   const signOut = useSignOut();
 
@@ -49,7 +80,10 @@ export function Navigation() {
     setMenuAnchor(null);
   }, [location.pathname]);
 
-  const handleBottomChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleBottomChange = (
+    event: React.SyntheticEvent,
+    newValue: number
+  ) => {
     setBottomValue(newValue);
     switch (newValue) {
       case 0:
@@ -71,36 +105,95 @@ export function Navigation() {
 
   return (
     <>
-      <AppBar position="fixed" role="banner" sx={{ display: { xs: "none", md: "block" } }}>
+      <AppBar
+        position="fixed"
+        role="banner"
+        sx={{ display: { xs: "none", md: "block" } }}
+      >
         <Toolbar sx={{ maxWidth: { xl: 1200 }, margin: "0 auto" }}>
-          <Box component={Link} to="/" aria-label="Accueil" sx={{ display: "flex", alignItems: "center", textDecoration: "none", color: "inherit" }}>
-            <img src={logo} alt="Logo de l'application" style={{ height: 40, marginRight: 12 }} />
+          <Box
+            component={Link}
+            to="/"
+            aria-label="Accueil"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+          >
+            <img
+              src={logo}
+              alt="Logo de l'application"
+              style={{ height: 40, marginRight: 12 }}
+            />
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
 
           {session?.session?.user ? (
             <>
-              <Button color="inherit" component={Link} to="/" startIcon={<HomeIcon />}>
+              <Button
+                color="inherit"
+                component={Link}
+                to="/"
+                startIcon={<HomeIcon />}
+              >
                 Accueil
               </Button>
-              <Button color="inherit" component={Link} to="/cake-history" startIcon={<HistoryIcon />}>
+              <Button
+                color="inherit"
+                component={Link}
+                to="/cake-history"
+                startIcon={<HistoryIcon />}
+              >
                 Historique
               </Button>
               <Tooltip title="Profil">
-                <IconButton color="inherit" onClick={handleMenuOpen} aria-haspopup="true" aria-expanded={isMenuOpen} aria-label="Ouvrir le menu utilisateur">
-                  <Avatar src={userDetails?.avatar_url || undefined} alt={`Avatar de ${userDetails?.name || "utilisateur"}`}>
+                <IconButton
+                  color="inherit"
+                  onClick={handleMenuOpen}
+                  aria-haspopup="true"
+                  aria-expanded={isMenuOpen}
+                  aria-label="Ouvrir le menu utilisateur"
+                >
+                  <Avatar
+                    src={userDetails?.avatar_url || undefined}
+                    width={40}
+                    height={40}
+                    alt={`Avatar de ${userDetails?.name || "utilisateur"}`}
+                    sx={{ backgroundColor: "primary.main" }}
+                  >
                     {userDetails?.name?.[0] || "U"}
                   </Avatar>
                 </IconButton>
               </Tooltip>
             </>
           ) : (
-            <Button color="inherit" component={Link} to="/login" startIcon={<LoginIcon />}>Connexion</Button>
+            <Button
+              color="inherit"
+              component={Link}
+              to="/login"
+              startIcon={<LoginIcon />}
+            >
+              Connexion
+            </Button>
           )}
 
-          <Tooltip title={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
-            <IconButton color="inherit" onClick={toggleTheme} aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+          <Tooltip
+            title={
+              mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"
+            }
+          >
+            <IconButton
+              color="inherit"
+              onClick={toggleTheme}
+              aria-label={
+                mode === "dark"
+                  ? "Passer en mode clair"
+                  : "Passer en mode sombre"
+              }
+            >
               {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
           </Tooltip>
@@ -114,7 +207,9 @@ export function Navigation() {
             transformOrigin={{ vertical: "top", horizontal: "right" }}
             keepMounted
           >
-            <MenuItem onClick={() => handleGo(`/profile/${session?.session?.user?.id}`)}>
+            <MenuItem
+              onClick={() => handleGo(`/profile/${session?.session?.user?.id}`)}
+            >
               <ListItemIcon>
                 <PersonIcon fontSize="small" />
               </ListItemIcon>
@@ -140,12 +235,50 @@ export function Navigation() {
       </AppBar>
 
       {session?.session?.user && (
-        <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: (theme) => theme.zIndex.appBar, display: { xs: "block", md: "none" }, bgcolor: "background.paper", borderTop: 1, borderColor: "divider" }}>
-          <BottomNavigation value={bottomValue} onChange={handleBottomChange} showLabels>
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: (theme) => theme.zIndex.appBar,
+            display: { xs: "block", md: "none" },
+            bgcolor: "background.paper",
+            borderTop: 1,
+            borderColor: "divider",
+          }}
+        >
+          <BottomNavigation
+            value={bottomValue}
+            onChange={handleBottomChange}
+            showLabels
+          >
             <BottomNavigationAction label="Accueil" icon={<HomeIcon />} />
             <BottomNavigationAction label="Historique" icon={<HistoryIcon />} />
-            <BottomNavigationAction label="Profil" icon={<Avatar sx={{ width: 24, height: 24 }} src={userDetails?.avatar_url || undefined}>{userDetails?.name?.[0] || "U"}</Avatar>} />
-            <BottomNavigationAction label={mode === "dark" ? "Clair" : "Sombre"} icon={mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />} />
+            <BottomNavigationAction
+              label="Profil"
+              icon={
+                <Avatar
+                  sx={{
+                    width: { xs: 48, sm: 64 },
+                    height: { xs: 48, sm: 64 },
+                    border: "2px solid",
+                    backgroundColor: "primary.main",
+                    cursor: "pointer",
+                    "&:hover": {
+                      opacity: 0.8,
+                    },
+                  }}
+                  src={userDetails?.avatar_url || undefined}
+                >
+                  {userDetails?.name?.[0] || "U"}
+                </Avatar>
+              }
+            />
+            <BottomNavigationAction
+              label={mode === "dark" ? "Clair" : "Sombre"}
+              icon={mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+            />
           </BottomNavigation>
         </Box>
       )}

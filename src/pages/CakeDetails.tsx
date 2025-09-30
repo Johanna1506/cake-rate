@@ -162,6 +162,7 @@ export function CakeDetails() {
                             alt={rating.user?.name}
                             sx={{
                               cursor: "pointer",
+                              backgroundColor: "primary.main",
                               "&:hover": {
                                 opacity: 0.8,
                               },
@@ -234,6 +235,7 @@ export function CakeDetails() {
                             alt={rating.user?.name}
                             sx={{
                               cursor: "pointer",
+                              backgroundColor: "primary.main",
                               "&:hover": {
                                 opacity: 0.8,
                               },

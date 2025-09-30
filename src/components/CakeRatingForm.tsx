@@ -149,8 +149,10 @@ function CakeInfo({ cake }: { cake: any }) {
             src={cake.user?.avatar_url}
             alt={cake.user?.name}
             sx={{
-              width: 40,
-              height: 40,
+              width: { xs: 48, sm: 64 },
+              height: { xs: 48, sm: 64 },
+              border: "2px solid",
+              backgroundColor: "primary.main",
               cursor: "pointer",
               "&:hover": {
                 opacity: 0.8,

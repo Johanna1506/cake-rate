@@ -81,7 +81,7 @@ export function ActiveWeekCard({
                       width: { xs: 48, sm: 64 },
                       height: { xs: 48, sm: 64 },
                       border: "2px solid",
-                      borderColor: "primary.main",
+                      backgroundColor: "primary.main",
                       cursor: "pointer",
                       "&:hover": {
                         opacity: 0.8,

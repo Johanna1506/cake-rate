@@ -70,6 +70,7 @@ export function SeasonRewards({ season }: SeasonRewardsProps) {
                     height: { xs: 96, sm: 120 },
                     border: "4px solid",
                     borderColor: "primary.main",
+                    backgroundColor: "primary.main",
                     boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                   }}
                 >
@@ -161,6 +162,7 @@ export function SeasonRewards({ season }: SeasonRewardsProps) {
                         height: 96,
                         border: "4px solid",
                         borderColor: "primary.main",
+                        backgroundColor: "primary.main",
                         boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                       }}
                     >

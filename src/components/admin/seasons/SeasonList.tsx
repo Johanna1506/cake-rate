@@ -167,7 +167,7 @@ export function SeasonList({
                             <Avatar
                               src={season.winner.avatar_url}
                               alt={season.winner.name}
-                              sx={{ width: 24, height: 24 }}
+                              sx={{ width: 24, height: 24, backgroundColor: "primary.main" }}
                             />
                           )}
                           <Typography variant="body2">

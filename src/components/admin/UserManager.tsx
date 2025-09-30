@@ -232,7 +232,7 @@ export function UserManager({ isTabActive }: UserManagerProps) {
                           <Avatar
                             src={user.avatar_url}
                             alt={user.name}
-                            sx={{ mr: 2 }}
+                            sx={{ mr: 2, backgroundColor: "primary.main" }}
                           />
                           <Typography variant="body1">{user.name}</Typography>
                         </StyledBox>

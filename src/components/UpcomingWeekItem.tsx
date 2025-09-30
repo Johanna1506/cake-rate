@@ -21,7 +21,7 @@ export function UpcomingWeekItem({ week }: UpcomingWeekItemProps) {
                 <Avatar
                   src={week.user.avatar_url}
                   alt={week.user.name}
-                  sx={{ width: 56, height: 56, border: "2px solid", borderColor: "primary.main", cursor: "pointer", "&:hover": { opacity: 0.8 } }}
+                  sx={{ width: 56, height: 56, border: "2px solid", borderColor: "primary.main", cursor: "pointer", backgroundColor: "primary.main", "&:hover": { opacity: 0.8 } }}
                 >
                   {week.user.name?.[0] || "U"}
                 </Avatar>
