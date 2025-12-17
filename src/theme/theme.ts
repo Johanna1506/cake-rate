@@ -26,7 +26,7 @@ export const lightTheme = createTheme({
             contrastText: '#ffffff',
         },
         background: {
-            default: '#d8e2dc', // cake-yellow (jaune clair)
+            default: '#F1FFF2', // cake-yellow (jaune clair)
             paper: '#ffffff',
         },
         text: {

@@ -163,7 +163,7 @@ export function SeasonRanking({ seasonId }: SeasonRankingProps) {
               {/* Score moyen */}
               <Box sx={{ textAlign: "right" }}>
                 <Chip
-                  label={`${ranking.averageScore.toFixed(1)}/5`}
+                  label={`${ranking.averageScore.toFixed(1)}/10`}
                   color={index === 0 ? "primary" : "default"}
                   variant={index === 0 ? "filled" : "outlined"}
                   sx={{

@@ -240,8 +240,11 @@ export function Navigation() {
             left: 0,
             right: 0,
             zIndex: (theme) => theme.zIndex.appBar,
-            display: { xs: "block", md: "none" },
+            display: { xs: "flex", md: "none" },
             bgcolor: "background.paper",
+            height: 74,
+            alignItems: "center",
+            justifyContent: "center",
             borderTop: 1,
             borderColor: "divider",
           }}
@@ -258,8 +261,8 @@ export function Navigation() {
               icon={
                 <Avatar
                   sx={{
-                    width: { xs: 48, sm: 64 },
-                    height: { xs: 48, sm: 64 },
+                    width: { xs: 42, sm: 64 },
+                    height: { xs: 42, sm: 64 },
                     border: "2px solid",
                     backgroundColor: "primary.main",
                     cursor: "pointer",

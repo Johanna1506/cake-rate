@@ -31,7 +31,9 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 const StyledCard = styled(Card)(({ theme }) => ({
+  width: "100%",
   height: "100%",
+  minHeight: "480px",
   display: "flex",
   flexDirection: "column",
   transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
@@ -372,13 +374,14 @@ export function CakeHistory() {
               )}
             </SeasonHeader>
             <Collapse in={openSeasons[seasonName] ?? true}>
-              <GridContainer container spacing={2}>
+              <GridContainer container spacing={2} sx={{ alignItems: "stretch" }}>
                 {seasonCakes.map((cake: CakeWithWeek, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={cake.id}>
+                  <Grid item xs={12} sm={6} md={4} key={cake.id} sx={{ display: "flex" }}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
+                      style={{ width: "100%", display: "flex" }}
                     >
                       <StyledCard
                         onClick={() => navigate(`/cake-history/${cake.id}`)}
@@ -409,61 +412,70 @@ export function CakeHistory() {
                             />
                           )}
                         </Box>
-                        <CardContent>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
-                            <IconButton
-                              onClick={() =>
-                                cake.user?.id &&
-                                navigate(`/profile/${cake.user.id}`)
-                              }
-                              sx={{ p: 0 }}
+                        <CardContent sx={{ 
+                          flex: 1, 
+                          display: "flex", 
+                          flexDirection: "column",
+                          justifyContent: "space-between"
+                        }}>
+                          <Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                mb: 2,
+                              }}
                             >
-                              <Avatar
-                                src={cake.user.avatar_url}
-                                alt={cake.user.name}
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  cursor: "pointer",
-                                  backgroundColor: "primary.main",
-                                  border: "2px solid",
-                                  "&:hover": {
-                                    opacity: 0.8,
-                                  },
-                                }}
+                              <IconButton
+                                onClick={() =>
+                                  cake.user?.id &&
+                                  navigate(`/profile/${cake.user.id}`)
+                                }
+                                sx={{ p: 0 }}
                               >
-                                {cake.user.name?.[0] || "U"}
-                              </Avatar>
-                            </IconButton>
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="h6" noWrap>
-                                {cake.user.name}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {format(
-                                  new Date(cake.week.start_date),
-                                  "dd MMMM yyyy",
-                                  {
-                                    locale: fr,
-                                  }
-                                )}
-                              </Typography>
+                                <Avatar
+                                  src={cake.user.avatar_url}
+                                  alt={cake.user.name}
+                                  sx={{
+                                    width: 40,
+                                    height: 40,
+                                    cursor: "pointer",
+                                    backgroundColor: "primary.main",
+                                    border: "2px solid",
+                                    "&:hover": {
+                                      opacity: 0.8,
+                                    },
+                                  }}
+                                >
+                                  {cake.user.name?.[0] || "U"}
+                                </Avatar>
+                              </IconButton>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="h6" noWrap>
+                                  {cake.user.name}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {format(
+                                    new Date(cake.week.start_date),
+                                    "dd MMMM yyyy",
+                                    {
+                                      locale: fr,
+                                    }
+                                  )}
+                                </Typography>
+                              </Box>
                             </Box>
+                            <Typography variant="body2" sx={{ mt: 1, mb: 2 }}>
+                              {cake.description}
+                            </Typography>
                           </Box>
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            {cake.description}
-                          </Typography>
-                          <CakeRatings cakeId={cake.id} week={cake.week} />
+                          <Box sx={{ mt: "auto" }}>
+                            <CakeRatings cakeId={cake.id} week={cake.week} />
+                          </Box>
                         </CardContent>
                       </StyledCard>
                     </motion.div>

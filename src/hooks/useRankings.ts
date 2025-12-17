@@ -53,10 +53,7 @@ export function useSeasonRanking(seasonId?: string) {
       data?.forEach((rating: any) => {
         const cake = rating.cakes;
         const user = cake.users;
-        const normalizedAppearance = (rating.appearance / 2.5) * 5;
-        const normalizedTaste = rating.taste;
-        const normalizedTheme = (rating.theme_adherence / 2.5) * 5;
-        const avgRating = (normalizedAppearance + normalizedTaste + normalizedTheme) / 3;
+        const totalScore = rating.appearance + rating.taste + rating.theme_adherence;
 
         if (!userStats.has(user.id)) {
           userStats.set(user.id, {
@@ -67,7 +64,7 @@ export function useSeasonRanking(seasonId?: string) {
         }
 
         const stats = userStats.get(user.id)!;
-        stats.scores.push(avgRating);
+        stats.scores.push(totalScore);
       });
 
       const rankingData: UserRanking[] = Array.from(userStats.entries()).map(([, stats]) => ({
