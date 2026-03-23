@@ -149,7 +149,7 @@ export function Home() {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Section de la dernière saison terminée */}
-      {lastCompletedSeason && (
+      {lastCompletedSeason && !currentSeason && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
             🏆 Dernière saison terminée
